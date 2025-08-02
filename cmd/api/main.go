@@ -49,7 +49,6 @@ func apiMux(
 	return func(router chi.Router) {
 		config := do.MustInvoke[configservice.ConfigService](injector).GetConfig()
 		humaConfig := huma.DefaultConfig("Kerbetes API", "dev")
-		humaConfig = openapi.WithAuthSchemes(humaConfig)
 		humaConfig = openapi.WithOverviewDoc(humaConfig)
 		humaConfig = openapi.WithServers(humaConfig, config)
 		api := humachi.New(router, humaConfig)
