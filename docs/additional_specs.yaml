@@ -1,6 +1,5 @@
 tags:
   - name: Authentification
     description: |
-      `Authentification` contains all the endpoints related to the authentification of the user.
-      Most of them are not usefull for you and require the `security` scope.
+      `Authentification` contains all the endpoints related to the authentification.
 
