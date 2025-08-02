@@ -1,4 +1,4 @@
-package configservice
+package configsvc
 
 import (
 	"reflect"

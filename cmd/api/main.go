@@ -9,7 +9,7 @@ import (
 	"github.com/froz42/kerbernetes/internal/controllers"
 	"github.com/froz42/kerbernetes/internal/openapi"
 	"github.com/froz42/kerbernetes/internal/services"
-	configservice "github.com/froz42/kerbernetes/internal/services/config"
+	configsvc "github.com/froz42/kerbernetes/internal/services/config"
 	"github.com/go-chi/chi/v5"
 	"github.com/samber/do"
 
@@ -29,7 +29,7 @@ func apiBootstrap() {
 		log.Fatalf("Failed to initialize services: %v", err)
 	}
 
-	config := do.MustInvoke[configservice.ConfigService](injector).GetConfig()
+	config := do.MustInvoke[configsvc.ConfigService](injector).GetConfig()
 
 	router := chi.NewRouter()
 
@@ -47,7 +47,7 @@ func apiMux(
 	injector *do.Injector,
 ) func(chi.Router) {
 	return func(router chi.Router) {
-		config := do.MustInvoke[configservice.ConfigService](injector).GetConfig()
+		config := do.MustInvoke[configsvc.ConfigService](injector).GetConfig()
 		humaConfig := huma.DefaultConfig("Kerbetes API", "dev")
 		humaConfig = openapi.WithOverviewDoc(humaConfig)
 		humaConfig = openapi.WithServers(humaConfig, config)
