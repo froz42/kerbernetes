@@ -83,6 +83,7 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 					},
 				}, metav1.CreateOptions{})
 			if err != nil {
+				svc.logger.Error("Failed to create service account", "error", err)
 				return nil, err
 			}
 			svc.logger.Info("Created new service account", "name", sa.Name, "namespace", sa.Namespace)
@@ -99,6 +100,7 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 			},
 		}, metav1.CreateOptions{})
 	if err != nil {
+		svc.logger.Error("Failed to create token for service account", "error", err)
 		return nil, err
 	}
 	svc.logger.Info("Issued token for service account", "name", sa.Name, "namespace", sa.Namespace)
