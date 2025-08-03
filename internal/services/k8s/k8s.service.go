@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	configsvc "github.com/froz42/kerbernetes/internal/services/config"
 	k8smodels "github.com/froz42/kerbernetes/internal/services/k8s/models"
 	"github.com/samber/do"
 	authv1 "k8s.io/api/authentication/v1"
@@ -20,16 +21,21 @@ type K8sService interface {
 }
 
 type k8sService struct {
+	apiConfig configsvc.Config
 	clientset *kubernetes.Clientset
 }
 
 func NewProvider() func(i *do.Injector) (K8sService, error) {
 	return func(i *do.Injector) (K8sService, error) {
-		return New()
+		return New(
+			do.MustInvoke[configsvc.ConfigService](i).GetConfig(),
+		)
 	}
 }
 
-func New() (K8sService, error) {
+func New(
+	apiConfig configsvc.Config,
+) (K8sService, error) {
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	loadingRules.DefaultClientConfig = &clientcmd.DefaultClientConfig
 	clientConfig := clientcmd.NewInteractiveDeferredLoadingClientConfig(
@@ -47,6 +53,7 @@ func New() (K8sService, error) {
 	}
 	return &k8sService{
 		clientset: clientset,
+		apiConfig: apiConfig,
 	}, nil
 }
 
@@ -77,7 +84,7 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 		CreateToken(ctx, username, &authv1.TokenRequest{
 			Spec: authv1.TokenRequestSpec{
 				Audiences:         []string{"https://kubernetes.default.svc.cluster.local"},
-				ExpirationSeconds: int64Ptr(3600), // 1 hour
+				ExpirationSeconds: int64Ptr(int64(svc.apiConfig.TokenDuration)),
 			},
 		}, metav1.CreateOptions{})
 	if err != nil {

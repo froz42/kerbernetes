@@ -14,6 +14,8 @@ type Config struct {
 	HTTPPort   int    `mapstructure:"HTTP_PORT"  default:"3000" validate:"required"`
 	APIPrefix  string `mapstructure:"API_PREFIX" default:"/api" validate:"required"`
 	KeytabPath string `mapstructure:"KEYTAB_PATH" default:"/etc/krb5.keytab" validate:"required"`
+
+	TokenDuration int `mapstructure:"TOKEN_DURATION" default:"300" validate:"required"`
 }
 
 // ConfigService is the interface for the config service.
