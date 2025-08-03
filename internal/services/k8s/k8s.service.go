@@ -76,6 +76,7 @@ func New(
 		clientset: clientset,
 		apiConfig: apiConfig,
 		logger:    logger.With("service", "k8s"),
+		namespace: namespace,
 	}, nil
 }
 
