@@ -3,7 +3,7 @@ package authctrl
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/froz42/kerbernetes/internal/middlewares"
@@ -18,6 +18,7 @@ type authController struct {
 	authSvc authsvc.AuthService
 	k8sSvc  k8ssvc.K8sService
 	config  configservice.Config
+	logger  *slog.Logger
 }
 
 func Init(api huma.API, injector *do.Injector) {
@@ -25,20 +26,20 @@ func Init(api huma.API, injector *do.Injector) {
 		authSvc: do.MustInvoke[authsvc.AuthService](injector),
 		k8sSvc:  do.MustInvoke[k8ssvc.K8sService](injector),
 		config:  do.MustInvoke[configservice.ConfigService](injector).GetConfig(),
+		logger:  do.MustInvoke[*slog.Logger](injector),
 	}
 	authController.Register(api)
 }
 
 func (ctrl *authController) Register(api huma.API) {
 	huma.Register(api, huma.Operation{
-		Method:  "GET",
-		Path:    "/auth/kerberos",
-		Summary: "Kerberos auth",
-		Description: `This endpoint is used to handle the Kerberos authentication for workstations.
-		\u26a0\ufe0f **You are probably not interested in this endpoint as it is should be only used by the frontend**.`,
+		Method:      "GET",
+		Path:        "/auth/kerberos",
+		Summary:     "Kerberos auth",
+		Description: `This endpoint is used to handle the Kerberos authentication.`,
 		Tags:        []string{"Authentification"},
 		OperationID: "getKerberosAuth",
-		Middlewares: huma.Middlewares{middlewares.SPNEGO(ctrl.config.KeytabPath)},
+		Middlewares: huma.Middlewares{middlewares.SPNEGO(ctrl.logger, ctrl.config.KeytabPath)},
 	}, ctrl.getKerberosAuth)
 }
 
@@ -50,10 +51,8 @@ func (ctrl *authController) getKerberosAuth(
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Authenticated principal: %s", principal)
 	creds, err := ctrl.k8sSvc.AuthAccount(ctx, principal)
 	if err != nil {
-		log.Printf("Failed to authenticate user on Kubernetes: %v", err)
 		return nil, huma.Error401Unauthorized("Unauthorized", errors.New("failed to authenticate user on Kubernetes"))
 	}
 	return &kerberosAuthOutput{

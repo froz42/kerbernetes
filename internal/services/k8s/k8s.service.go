@@ -2,7 +2,7 @@ package k8ssvc
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	configsvc "github.com/froz42/kerbernetes/internal/services/config"
@@ -23,17 +23,20 @@ type K8sService interface {
 type k8sService struct {
 	apiConfig configsvc.Config
 	clientset *kubernetes.Clientset
+	logger  *slog.Logger
 }
 
 func NewProvider() func(i *do.Injector) (K8sService, error) {
 	return func(i *do.Injector) (K8sService, error) {
 		return New(
+			do.MustInvoke[*slog.Logger](i),
 			do.MustInvoke[configsvc.ConfigService](i).GetConfig(),
 		)
 	}
 }
 
 func New(
+	logger *slog.Logger,
 	apiConfig configsvc.Config,
 ) (K8sService, error) {
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
@@ -54,6 +57,7 @@ func New(
 	return &k8sService{
 		clientset: clientset,
 		apiConfig: apiConfig,
+		logger:    logger.With("service", "k8s"),
 	}, nil
 }
 
@@ -74,10 +78,10 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 			if err != nil {
 				return nil, err
 			}
-			log.Printf("Created service account: %s", sa.Name)
+			svc.logger.Info("Created new service account", "name", sa.Name, "namespace", sa.Namespace)
 		}
 	} else {
-		log.Printf("Service account already exists: %s", sa.Name)
+		svc.logger.Info("Found existing service account", "name", sa.Name, "namespace", sa.Namespace)
 	}
 	// now we can issue a token for the service account
 	tr, err := svc.clientset.CoreV1().ServiceAccounts("default").
@@ -90,7 +94,7 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Issued token for service account: %s", sa.Name)
+	svc.logger.Info("Issued token for service account", "name", sa.Name, "namespace", sa.Namespace)
 	return &k8smodels.Credentials{
 		Kind:       "ExecCredential",
 		ApiVersion: "client.authentication.k8s.io/v1beta1",
