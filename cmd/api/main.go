@@ -71,7 +71,7 @@ func apiMux(
 	logger := do.MustInvoke[*slog.Logger](injector)
 	return func(router chi.Router) {
 		config := do.MustInvoke[configsvc.ConfigService](injector).GetConfig()
-		humaConfig := huma.DefaultConfig("Kerbetes API", "dev")
+		humaConfig := huma.DefaultConfig("Kerbernetes API", "dev")
 		humaConfig = openapi.WithOverviewDoc(humaConfig)
 		humaConfig = openapi.WithServers(humaConfig, config)
 		api := humachi.New(router, humaConfig)
