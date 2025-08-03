@@ -3,6 +3,7 @@ package k8ssvc
 import (
 	"context"
 	"log/slog"
+	"os"
 	"time"
 
 	configsvc "github.com/froz42/kerbernetes/internal/services/config"
@@ -25,6 +26,7 @@ type k8sService struct {
 	apiConfig configsvc.Config
 	clientset *kubernetes.Clientset
 	logger    *slog.Logger
+	namespace string
 }
 
 func NewProvider() func(i *do.Injector) (K8sService, error) {
@@ -40,6 +42,15 @@ func New(
 	logger *slog.Logger,
 	apiConfig configsvc.Config,
 ) (K8sService, error) {
+	namespace := apiConfig.Namespace
+	namespaceBytes, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err == nil {
+		namespace = string(namespaceBytes)
+		logger.Info("Using namespace from service account", "namespace", namespace)
+	} else {
+		logger.Warn("Failed to read namespace from service account, using configured namespace", "error", err, "namespace", namespace)
+	}
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		logger.Warn("Failed to create in-cluster config, falling back to kubeconfig", "error", err)
