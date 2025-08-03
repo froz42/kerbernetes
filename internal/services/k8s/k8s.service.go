@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -23,7 +24,7 @@ type K8sService interface {
 type k8sService struct {
 	apiConfig configsvc.Config
 	clientset *kubernetes.Clientset
-	logger  *slog.Logger
+	logger    *slog.Logger
 }
 
 func NewProvider() func(i *do.Injector) (K8sService, error) {
@@ -39,17 +40,23 @@ func New(
 	logger *slog.Logger,
 	apiConfig configsvc.Config,
 ) (K8sService, error) {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.DefaultClientConfig = &clientcmd.DefaultClientConfig
-	clientConfig := clientcmd.NewInteractiveDeferredLoadingClientConfig(
-		loadingRules,
-		nil,
-		nil,
-	)
-	config, err := clientConfig.ClientConfig()
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, err
+		logger.Warn("Failed to create in-cluster config, falling back to kubeconfig", "error", err)
+
+		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+		loadingRules.DefaultClientConfig = &clientcmd.DefaultClientConfig
+		clientConfig := clientcmd.NewInteractiveDeferredLoadingClientConfig(
+			loadingRules,
+			nil,
+			nil,
+		)
+		config, err = clientConfig.ClientConfig()
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
