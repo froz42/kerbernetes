@@ -81,13 +81,13 @@ func New(
 
 func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smodels.Credentials, error) {
 	sa, err := svc.clientset.CoreV1().
-		ServiceAccounts("default").
+		ServiceAccounts(svc.namespace).
 		Get(ctx, username, metav1.GetOptions{})
 	// if not found, create a new service account
 	if err != nil {
 		if errors.IsNotFound(err) {
 			sa, err = svc.clientset.CoreV1().
-				ServiceAccounts("default").
+				ServiceAccounts(svc.namespace).
 				Create(ctx, &corev1.ServiceAccount{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: username,
@@ -103,7 +103,7 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 		svc.logger.Info("Found existing service account", "name", sa.Name, "namespace", sa.Namespace)
 	}
 	// now we can issue a token for the service account
-	tr, err := svc.clientset.CoreV1().ServiceAccounts("default").
+	tr, err := svc.clientset.CoreV1().ServiceAccounts(svc.namespace).
 		CreateToken(ctx, username, &authv1.TokenRequest{
 			Spec: authv1.TokenRequestSpec{
 				Audiences:         []string{"https://kubernetes.default.svc.cluster.local"},
