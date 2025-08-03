@@ -19,6 +19,8 @@ import (
 	"github.com/go-chi/httplog/v3"
 )
 
+var Version = "dev"
+
 func main() {
 	apiBootstrap()
 }
@@ -30,7 +32,7 @@ func apiBootstrap() {
 		ReplaceAttr: logFormat.ReplaceAttr,
 	})).With(
 		slog.String("app", "kerbernetes-api"),
-		slog.String("version", "indev"),
+		slog.String("version", Version),
 	)
 
 	injector := do.New()
