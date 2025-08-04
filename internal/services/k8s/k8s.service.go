@@ -6,7 +6,6 @@ import (
 	"os"
 
 	configsvc "github.com/froz42/kerbernetes/internal/services/config"
-	k8smodels "github.com/froz42/kerbernetes/internal/services/k8s/models"
 	"github.com/samber/do"
 	authv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -20,6 +19,9 @@ import (
 type K8sService interface {
 	// UpsertServiceAccount retrieves or creates a service account for the given username
 	UpsertServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error)
+
+	// IssueToken creates a token for the service account
+	IssueToken(ctx context.Context, username string) (*authv1.TokenRequest, error)
 }
 
 type k8sService struct {
@@ -56,26 +58,61 @@ func New(logger *slog.Logger, apiConfig configsvc.Config) (K8sService, error) {
 	}, nil
 }
 
-// AuthAccount retrieves or creates a service account for the given username and issues a token for it.
-func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smodels.Credentials, error) {
-	_, err := svc.UpsertServiceAccount(ctx, username)
+// UpsertServiceAccount retrieves or creates a service account for the given username.
+func (svc *k8sService) UpsertServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error) {
+	sa, err := svc.clientset.CoreV1().
+		ServiceAccounts(svc.namespace).
+		Get(ctx, username, metav1.GetOptions{})
 	if err != nil {
+		if errors.IsNotFound(err) {
+			return svc.createServiceAccount(ctx, username)
+		}
+		svc.logger.Error("Failed to get service account", "error", err)
 		return nil, err
 	}
 
-	token, err := svc.issueToken(ctx, username)
+	svc.logger.Info("Found existing service account", "name", sa.Name, "namespace", sa.Namespace)
+	return sa, nil
+}
+
+// IssueToken creates a token for the service account.
+func (svc *k8sService) IssueToken(ctx context.Context, username string) (*authv1.TokenRequest, error) {
+	token, err := svc.clientset.CoreV1().ServiceAccounts(svc.namespace).
+		CreateToken(ctx, username, &authv1.TokenRequest{
+			Spec: authv1.TokenRequestSpec{
+				Audiences:         []string{"https://kubernetes.default.svc.cluster.local"},
+				ExpirationSeconds: int64Ptr(int64(svc.apiConfig.TokenDuration)),
+			},
+		}, metav1.CreateOptions{})
 	if err != nil {
+		svc.logger.Error("Failed to create token for service account", "error", err)
 		return nil, err
 	}
 
-	return &k8smodels.Credentials{
-		Kind:       "ExecCredential",
-		ApiVersion: "client.authentication.k8s.io/v1beta1",
-		Status: &k8smodels.Status{
-			Token:               token.Status.Token,
-			ExpirationTimestamp: token.Status.ExpirationTimestamp.Time,
-		},
-	}, nil
+	svc.logger.Info("Issued token for service account", "name", username, "namespace", svc.namespace)
+	return token, nil
+}
+
+func (svc *k8sService) createServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error) {
+	sa, err := svc.clientset.CoreV1().
+		ServiceAccounts(svc.namespace).
+		Create(ctx, &corev1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: username,
+			},
+		}, metav1.CreateOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to create service account", "error", err)
+		return nil, err
+	}
+
+	svc.logger.Info("Created new service account", "name", sa.Name, "namespace", sa.Namespace)
+	return sa, nil
+}
+
+// int64Ptr is a helper function to create a pointer to an int64 value.
+func int64Ptr(i int64) *int64 {
+	return &i
 }
 
 // getNamespace retrieves the namespace from the service account or uses the configured namespace.
@@ -114,61 +151,4 @@ func createK8sClient(logger *slog.Logger) (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return clientset, nil
-}
-
-// UpsertServiceAccount retrieves or creates a service account for the given username.
-func (svc *k8sService) UpsertServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error) {
-	sa, err := svc.clientset.CoreV1().
-		ServiceAccounts(svc.namespace).
-		Get(ctx, username, metav1.GetOptions{})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return svc.createServiceAccount(ctx, username)
-		}
-		svc.logger.Error("Failed to get service account", "error", err)
-		return nil, err
-	}
-
-	svc.logger.Info("Found existing service account", "name", sa.Name, "namespace", sa.Namespace)
-	return sa, nil
-}
-
-func (svc *k8sService) createServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error) {
-	sa, err := svc.clientset.CoreV1().
-		ServiceAccounts(svc.namespace).
-		Create(ctx, &corev1.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: username,
-			},
-		}, metav1.CreateOptions{})
-	if err != nil {
-		svc.logger.Error("Failed to create service account", "error", err)
-		return nil, err
-	}
-
-	svc.logger.Info("Created new service account", "name", sa.Name, "namespace", sa.Namespace)
-	return sa, nil
-}
-
-// issueToken creates a token for the service account.
-func (svc *k8sService) issueToken(ctx context.Context, username string) (*authv1.TokenRequest, error) {
-	token, err := svc.clientset.CoreV1().ServiceAccounts(svc.namespace).
-		CreateToken(ctx, username, &authv1.TokenRequest{
-			Spec: authv1.TokenRequestSpec{
-				Audiences:         []string{"https://kubernetes.default.svc.cluster.local"},
-				ExpirationSeconds: int64Ptr(int64(svc.apiConfig.TokenDuration)),
-			},
-		}, metav1.CreateOptions{})
-	if err != nil {
-		svc.logger.Error("Failed to create token for service account", "error", err)
-		return nil, err
-	}
-
-	svc.logger.Info("Issued token for service account", "name", username, "namespace", svc.namespace)
-	return token, nil
-}
-
-// int64Ptr is a helper function to create a pointer to an int64 value.
-func int64Ptr(i int64) *int64 {
-	return &i
 }
