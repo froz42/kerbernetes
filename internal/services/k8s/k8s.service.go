@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"time"
 
 	configsvc "github.com/froz42/kerbernetes/internal/services/config"
 	k8smodels "github.com/froz42/kerbernetes/internal/services/k8s/models"
@@ -121,7 +120,7 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 		ApiVersion: "client.authentication.k8s.io/v1beta1",
 		Status: &k8smodels.Status{
 			Token:               tr.Status.Token,
-			ExpirationTimestamp: tr.Status.ExpirationTimestamp.Format(time.RFC3339),
+			ExpirationTimestamp: tr.Status.ExpirationTimestamp.Time,
 		},
 	}, nil
 }
