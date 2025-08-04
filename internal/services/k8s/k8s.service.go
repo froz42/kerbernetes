@@ -98,6 +98,9 @@ func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smo
 				return nil, err
 			}
 			svc.logger.Info("Created new service account", "name", sa.Name, "namespace", sa.Namespace)
+		} else {
+			svc.logger.Error("Failed to get service account", "error", err)
+			return nil, err
 		}
 	} else {
 		svc.logger.Info("Found existing service account", "name", sa.Name, "namespace", sa.Namespace)
