@@ -51,7 +51,7 @@ func apiBootstrap() {
 	router.Use(httplog.RequestLogger(logger, &httplog.Options{
 		Level:         slog.LevelInfo,
 		Schema:        httplog.SchemaECS,
-		// RecoverPanics: true,
+		RecoverPanics: true,
 	}))
 
 	router.Route(env.APIPrefix, apiMux(injector))
@@ -80,7 +80,6 @@ func apiMux(
 			logger.Error("Failed to initialize controllers", "error", err)
 			os.Exit(1)
 		}
-		router.Get("/", openapi.ScalarDocHandler(config))
 		router.Get("/docs", notFoundHandler)
 	}
 }
