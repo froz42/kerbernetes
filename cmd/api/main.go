@@ -51,7 +51,7 @@ func apiBootstrap() {
 	router.Use(httplog.RequestLogger(logger, &httplog.Options{
 		Level:         slog.LevelInfo,
 		Schema:        httplog.SchemaECS,
-		RecoverPanics: true,
+		// RecoverPanics: true,
 	}))
 
 	router.Route(config.APIPrefix, apiMux(injector))

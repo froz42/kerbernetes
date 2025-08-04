@@ -2,10 +2,14 @@ package authsvc
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 
+	"github.com/danielgtaylor/huma/v2"
 	configsvc "github.com/froz42/kerbernetes/internal/services/config"
 	k8ssvc "github.com/froz42/kerbernetes/internal/services/k8s"
 	k8smodels "github.com/froz42/kerbernetes/internal/services/k8s/models"
+	ldapsvc "github.com/froz42/kerbernetes/internal/services/ldap"
 	"github.com/samber/do"
 )
 
@@ -14,8 +18,10 @@ type AuthService interface {
 }
 
 type authService struct {
-	configsvc configsvc.ConfigService
-	k8sSvc    k8ssvc.K8sService
+	config  configsvc.Config
+	k8sSvc  k8ssvc.K8sService
+	ldapSvc ldapsvc.LDAPSvc
+	logger  *slog.Logger
 }
 
 func NewProvider() func(i *do.Injector) (AuthService, error) {
@@ -23,6 +29,8 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 		return New(
 			do.MustInvoke[configsvc.ConfigService](i),
 			do.MustInvoke[k8ssvc.K8sService](i),
+			do.MustInvoke[ldapsvc.LDAPSvc](i),
+			do.MustInvoke[*slog.Logger](i),
 		)
 	}
 }
@@ -30,14 +38,32 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 func New(
 	configService configsvc.ConfigService,
 	k8sService k8ssvc.K8sService,
+	ldapsvc ldapsvc.LDAPSvc,
+	logger *slog.Logger,
 ) (AuthService, error) {
 	return &authService{
-		configsvc: configService,
-		k8sSvc:    k8sService,
+		config:  configService.GetConfig(),
+		k8sSvc:  k8sService,
+		ldapSvc: ldapsvc,
+		logger:  logger.With("service", "auth"),
 	}, nil
 }
 
 func (s *authService) AuthAccount(ctx context.Context, username string) (*k8smodels.Credentials, error) {
-	// Delegate the authentication to the K8s service
-	return s.k8sSvc.AuthAccount(ctx, username)
+	s.logger.Info("Authenticating user", "username", username)
+	// in case of LDAP we first try to get the user from LDAP
+	if s.config.LDAPEnabled {
+		user, err := s.ldapSvc.GetUser(username)
+		if err != nil {
+			s.logger.Error("Failed to get user from LDAP", "username", username, "error", err)
+			return nil, huma.Error401Unauthorized("unauthorized", errors.New("failed to authenticate user on LDAP"))
+		}
+		groups, err := s.ldapSvc.GetUserGroups(user.DN)
+		if err != nil {
+			s.logger.Error("Failed to get user groups from LDAP", "username", username, "error", err)
+			return nil, huma.Error401Unauthorized("Unauthorized", errors.New("failed to authenticate user on LDAP"))
+		}
+		s.logger.Info("User authenticated via LDAP", "username", username, "dn", user.DN, "groups", groups)
+	}
+	return nil, huma.Error501NotImplemented("Not Implemented")
 }

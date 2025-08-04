@@ -17,6 +17,19 @@ type Config struct {
 	Namespace  string `mapstructure:"NAMESPACE" default:"default" validate:"required"`
 
 	TokenDuration int `mapstructure:"TOKEN_DURATION" default:"600" validate:"required"`
+
+	LDAPEnabled bool   `mapstructure:"LDAP_ENABLED" default:"false"`
+	LDAPURL     string `mapstructure:"LDAP_URL"`
+
+	LDAPBindDN       string `mapstructure:"LDAP_BIND_DN"`
+	LDAPBindPassword string `mapstructure:"LDAP_BIND_PASSWORD"`
+
+	LDAPUserBaseDN string `mapstructure:"LDAP_USER_BASE_DN" default:"ou=users"`
+	LDAPUserFilter string `mapstructure:"LDAP_USER_FILTER" default:"(uid=%s)"`
+
+	LDAPGroupBaseDN        string `mapstructure:"LDAP_GROUP_BASE_DN" default:"ou=groups"`
+	LDAPGroupFilter        string `mapstructure:"LDAP_GROUP_FILTER" default:"((member=%s)"`
+	LDAPGroupNameAttribute string `mapstructure:"LDAP_GROUP_NAME_ATTRIBUTE" default:"cn"`
 }
 
 // ConfigService is the interface for the config service.

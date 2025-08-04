@@ -18,7 +18,8 @@ import (
 )
 
 type K8sService interface {
-	AuthAccount(ctx context.Context, username string) (*k8smodels.Credentials, error)
+	// UpsertServiceAccount retrieves or creates a service account for the given username
+	UpsertServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error)
 }
 
 type k8sService struct {
@@ -57,7 +58,7 @@ func New(logger *slog.Logger, apiConfig configsvc.Config) (K8sService, error) {
 
 // AuthAccount retrieves or creates a service account for the given username and issues a token for it.
 func (svc *k8sService) AuthAccount(ctx context.Context, username string) (*k8smodels.Credentials, error) {
-	_, err := svc.getOrCreateServiceAccount(ctx, username)
+	_, err := svc.UpsertServiceAccount(ctx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +116,8 @@ func createK8sClient(logger *slog.Logger) (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-// getOrCreateServiceAccount retrieves or creates a service account for the given username.
-func (svc *k8sService) getOrCreateServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error) {
+// UpsertServiceAccount retrieves or creates a service account for the given username.
+func (svc *k8sService) UpsertServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error) {
 	sa, err := svc.clientset.CoreV1().
 		ServiceAccounts(svc.namespace).
 		Get(ctx, username, metav1.GetOptions{})

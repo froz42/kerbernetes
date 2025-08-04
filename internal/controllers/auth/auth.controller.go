@@ -2,7 +2,6 @@ package authctrl
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -50,7 +49,7 @@ func (ctrl *authController) getKerberosAuth(
 	}
 	creds, err := ctrl.authSvc.AuthAccount(ctx, principal)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Unauthorized", errors.New("failed to authenticate user on Kubernetes"))
+		return nil, err
 	}
 	return &kerberosAuthOutput{
 		Body: creds,
