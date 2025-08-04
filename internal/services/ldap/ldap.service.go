@@ -20,7 +20,6 @@ type ldapSvc struct {
 	config configsvc.Config
 }
 
-// Dependency injection provider
 func NewProvider() func(i *do.Injector) (LDAPSvc, error) {
 	return func(i *do.Injector) (LDAPSvc, error) {
 		config := do.MustInvoke[configsvc.ConfigService](i).GetConfig()
@@ -28,7 +27,6 @@ func NewProvider() func(i *do.Injector) (LDAPSvc, error) {
 	}
 }
 
-// Create the service with just config
 func New(config configsvc.Config) (LDAPSvc, error) {
 	return &ldapSvc{
 		config: config,
