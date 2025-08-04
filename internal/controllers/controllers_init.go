@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/autopatch"
 	authcontroller "github.com/froz42/kerbernetes/internal/controllers/auth"
 	"github.com/samber/do"
 )
@@ -24,6 +23,5 @@ func ControllersInit(api huma.API, injector *do.Injector) error {
 		controller(api, injector)
 	}
 
-	autopatch.AutoPatch(api)
 	return nil
 }
