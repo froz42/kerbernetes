@@ -1,0 +1,55 @@
+#!/bin/sh
+
+auth_url=$1
+if [ -z "$auth_url" ]; then
+    echo "Usage: $0 <auth_url> [<cluster_name>]"
+    echo "Example: $0 https://kerbernetes.froz.lan/api/auth/kerberos"
+    echo "If <cluster_name> is not provided, 'default' will be used."
+    exit 1
+fi
+
+cluster_name=$2
+
+set -euo pipefail
+
+ressouce_name=$(echo "$auth_url" | sed -E 's|^https?://||' | cut -d'/' -f1)
+if [ -z "$ressouce_name" ]; then
+    echo "Invalid auth_url: $auth_url"
+    exit 1
+fi
+
+CACHE_DIR="${HOME}/.kube/cache/${ressouce_name}/${cluster_name:-default}"
+CACHE_FILE="${CACHE_DIR}/credentials.json"
+
+mkdir -p "$CACHE_DIR"
+
+log() {
+    echo "$@" >&2
+}
+log_created()  { log "credentials \"${ressouce_name}\" created"; }
+log_expired()  { log "credentials \"${ressouce_name}\" expired"; }
+log_invalid()  { log "credentials \"${ressouce_name}\" invalid"; }
+log_error()    { log "error: $@" >&2; }
+
+if [ -f "$CACHE_FILE" ]; then
+    EXPIRY=$(jq -r '.status.expirationTimestamp' "$CACHE_FILE" 2>/dev/null || echo "")
+    [ -z "$EXPIRY" ] && log_invalid && exit 1
+
+    NOW_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    [ "$EXPIRY" \> "$NOW_UTC" ] && cat "$CACHE_FILE" && exit 0
+
+    log_expired
+fi
+
+
+RESPONSE=$(curl -sSf --negotiate -u : "$auth_url" 2>/dev/null || true)
+
+if [ -z "$RESPONSE" ]; then
+    log_error "failed to fetch credentials from ${auth_url}"
+    exit 1
+fi
+
+echo "$RESPONSE" > "$CACHE_FILE"
+
+log_created
+cat "$CACHE_FILE"
