@@ -5,8 +5,8 @@ package v1
 // LdapClusterRoleBindingSpecApplyConfiguration represents a declarative configuration of the LdapClusterRoleBindingSpec type for use
 // with apply.
 type LdapClusterRoleBindingSpecApplyConfiguration struct {
-	LdapGroupDN    *string                `json:"ldapGroupDN,omitempty"`
-	ClusterRoleRef *struct{ Name string } `json:"clusterRoleRef,omitempty"`
+	LdapGroupDN    *string                           `json:"ldapGroupDN,omitempty"`
+	ClusterRoleRef *ClusterRoleRefApplyConfiguration `json:"clusterRoleRef,omitempty"`
 }
 
 // LdapClusterRoleBindingSpecApplyConfiguration constructs a declarative configuration of the LdapClusterRoleBindingSpec type for use with
@@ -26,7 +26,7 @@ func (b *LdapClusterRoleBindingSpecApplyConfiguration) WithLdapGroupDN(value str
 // WithClusterRoleRef sets the ClusterRoleRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ClusterRoleRef field is set to the value of the last call.
-func (b *LdapClusterRoleBindingSpecApplyConfiguration) WithClusterRoleRef(value struct{ Name string }) *LdapClusterRoleBindingSpecApplyConfiguration {
-	b.ClusterRoleRef = &value
+func (b *LdapClusterRoleBindingSpecApplyConfiguration) WithClusterRoleRef(value *ClusterRoleRefApplyConfiguration) *LdapClusterRoleBindingSpecApplyConfiguration {
+	b.ClusterRoleRef = value
 	return b
 }
