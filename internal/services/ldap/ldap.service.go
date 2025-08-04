@@ -43,7 +43,7 @@ func (s *ldapSvc) GetUser(username string) (*ldap.Entry, error) {
 			s.config.LDAPUserBaseDN,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 			fmt.Sprintf(s.config.LDAPUserFilter, username),
-			[]string{"dn", "cn"},
+			[]string{"dn"},
 			nil,
 		)
 
@@ -76,7 +76,7 @@ func (s *ldapSvc) GetUserGroups(dn string) ([]string, error) {
 			s.config.LDAPGroupBaseDN,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 			fmt.Sprintf(s.config.LDAPGroupFilter, dn),
-			[]string{"dn", s.config.LDAPGroupNameAttribute},
+			[]string{"dn"},
 			nil,
 		)
 
@@ -86,7 +86,7 @@ func (s *ldapSvc) GetUserGroups(dn string) ([]string, error) {
 		}
 
 		for _, entry := range result.Entries {
-			groups = append(groups, entry.GetAttributeValue(s.config.LDAPGroupNameAttribute))
+			groups = append(groups, entry.GetAttributeValue("dn"))
 		}
 
 		return nil

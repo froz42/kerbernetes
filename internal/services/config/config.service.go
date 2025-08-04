@@ -29,7 +29,6 @@ type Config struct {
 
 	LDAPGroupBaseDN        string `mapstructure:"LDAP_GROUP_BASE_DN" default:"ou=groups"`
 	LDAPGroupFilter        string `mapstructure:"LDAP_GROUP_FILTER" default:"((member=%s)"`
-	LDAPGroupNameAttribute string `mapstructure:"LDAP_GROUP_NAME_ATTRIBUTE" default:"cn"`
 }
 
 // ConfigService is the interface for the config service.
