@@ -86,7 +86,7 @@ func (s *ldapSvc) GetUserGroups(dn string) ([]string, error) {
 		}
 
 		for _, entry := range result.Entries {
-			groups = append(groups, entry.GetAttributeValue("dn"))
+			groups = append(groups, entry.DN)
 		}
 
 		return nil
