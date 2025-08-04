@@ -63,9 +63,3 @@ fi
 echo "$BODY" > "$CACHE_FILE"
 log_created
 cat "$CACHE_FILE"
-
-
-echo "$RESPONSE" > "$CACHE_FILE"
-
-log_created
-cat "$CACHE_FILE"
