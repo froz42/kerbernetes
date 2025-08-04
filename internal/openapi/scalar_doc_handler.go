@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
-	configservice "github.com/froz42/kerbernetes/internal/services/config"
+	envsvc "github.com/froz42/kerbernetes/internal/services/env"
 )
 
 const scalarDocHtml = `
@@ -41,7 +41,7 @@ type ScalarDocData struct {
 	APIPrefix string
 }
 
-func ScalarDocHandler(config configservice.Config) func(w http.ResponseWriter, r *http.Request) {
+func ScalarDocHandler(config envsvc.Env) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		tmpl, err := template.New("scalarDoc").Parse(scalarDocHtml)

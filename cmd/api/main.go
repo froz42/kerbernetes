@@ -10,7 +10,7 @@ import (
 	"github.com/froz42/kerbernetes/internal/controllers"
 	"github.com/froz42/kerbernetes/internal/openapi"
 	"github.com/froz42/kerbernetes/internal/services"
-	configsvc "github.com/froz42/kerbernetes/internal/services/config"
+	envsvc "github.com/froz42/kerbernetes/internal/services/env"
 	"github.com/go-chi/chi/v5"
 	"github.com/samber/do"
 
@@ -44,7 +44,7 @@ func apiBootstrap() {
 		os.Exit(1)
 	}
 
-	config := do.MustInvoke[configsvc.ConfigService](injector).GetConfig()
+	env := do.MustInvoke[envsvc.EnvSvc](injector).GetEnv()
 
 	router := chi.NewRouter()
 
@@ -54,10 +54,10 @@ func apiBootstrap() {
 		// RecoverPanics: true,
 	}))
 
-	router.Route(config.APIPrefix, apiMux(injector))
+	router.Route(env.APIPrefix, apiMux(injector))
 
-	logger.Info("Started API server", "port", config.HTTPPort, "prefix", config.APIPrefix)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", config.HTTPPort), router)
+	logger.Info("Started API server", "port", env.HTTPPort, "prefix", env.APIPrefix)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", env.HTTPPort), router)
 	if err != nil {
 		logger.Error("Failed to start API server", "error", err)
 		os.Exit(1)
@@ -70,7 +70,7 @@ func apiMux(
 ) func(chi.Router) {
 	logger := do.MustInvoke[*slog.Logger](injector)
 	return func(router chi.Router) {
-		config := do.MustInvoke[configsvc.ConfigService](injector).GetConfig()
+		config := do.MustInvoke[envsvc.EnvSvc](injector).GetEnv()
 		humaConfig := huma.DefaultConfig("Kerbernetes API", "dev")
 		humaConfig = openapi.WithOverviewDoc(humaConfig)
 		humaConfig = openapi.WithServers(humaConfig, config)

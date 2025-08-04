@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	configsvc "github.com/froz42/kerbernetes/internal/services/config"
+	envsvc "github.com/froz42/kerbernetes/internal/services/env"
 	"github.com/samber/do"
 	authv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -25,7 +25,7 @@ type K8sService interface {
 }
 
 type k8sService struct {
-	apiConfig configsvc.Config
+	env       envsvc.Env
 	clientset *kubernetes.Clientset
 	logger    *slog.Logger
 	namespace string
@@ -34,12 +34,12 @@ type k8sService struct {
 func NewProvider() func(i *do.Injector) (K8sService, error) {
 	return func(i *do.Injector) (K8sService, error) {
 		logger := do.MustInvoke[*slog.Logger](i)
-		config := do.MustInvoke[configsvc.ConfigService](i).GetConfig()
-		return New(logger, config)
+		env := do.MustInvoke[envsvc.EnvSvc](i).GetEnv()
+		return New(logger, env)
 	}
 }
 
-func New(logger *slog.Logger, apiConfig configsvc.Config) (K8sService, error) {
+func New(logger *slog.Logger, apiConfig envsvc.Env) (K8sService, error) {
 	namespace, err := getNamespace(apiConfig, logger)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func New(logger *slog.Logger, apiConfig configsvc.Config) (K8sService, error) {
 
 	return &k8sService{
 		clientset: clientset,
-		apiConfig: apiConfig,
+		env:       apiConfig,
 		logger:    logger.With("service", "k8s"),
 		namespace: namespace,
 	}, nil
@@ -81,7 +81,7 @@ func (svc *k8sService) IssueToken(ctx context.Context, username string) (*authv1
 		CreateToken(ctx, username, &authv1.TokenRequest{
 			Spec: authv1.TokenRequestSpec{
 				Audiences:         []string{"https://kubernetes.default.svc.cluster.local"},
-				ExpirationSeconds: int64Ptr(int64(svc.apiConfig.TokenDuration)),
+				ExpirationSeconds: int64Ptr(int64(svc.env.TokenDuration)),
 			},
 		}, metav1.CreateOptions{})
 	if err != nil {
@@ -116,8 +116,8 @@ func int64Ptr(i int64) *int64 {
 }
 
 // getNamespace retrieves the namespace from the service account or uses the configured namespace.
-func getNamespace(apiConfig configsvc.Config, logger *slog.Logger) (string, error) {
-	namespace := apiConfig.Namespace
+func getNamespace(env envsvc.Env, logger *slog.Logger) (string, error) {
+	namespace := env.Namespace
 	namespaceBytes, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err == nil {
 		namespace = string(namespaceBytes)

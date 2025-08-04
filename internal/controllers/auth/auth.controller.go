@@ -8,20 +8,20 @@ import (
 	"github.com/froz42/kerbernetes/internal/middlewares"
 	"github.com/froz42/kerbernetes/internal/security"
 	authsvc "github.com/froz42/kerbernetes/internal/services/auth"
-	configservice "github.com/froz42/kerbernetes/internal/services/config"
+	envsvc "github.com/froz42/kerbernetes/internal/services/env"
 	"github.com/samber/do"
 )
 
 type authController struct {
 	authSvc authsvc.AuthService
-	config  configservice.Config
+	env     envsvc.Env
 	logger  *slog.Logger
 }
 
 func Init(api huma.API, injector *do.Injector) {
 	authController := &authController{
 		authSvc: do.MustInvoke[authsvc.AuthService](injector),
-		config:  do.MustInvoke[configservice.ConfigService](injector).GetConfig(),
+		env:     do.MustInvoke[envsvc.EnvSvc](injector).GetEnv(),
 		logger:  do.MustInvoke[*slog.Logger](injector),
 	}
 	authController.Register(api)
@@ -35,7 +35,7 @@ func (ctrl *authController) Register(api huma.API) {
 		Description: `This endpoint is used to handle the Kerberos authentication.`,
 		Tags:        []string{"Authentification"},
 		OperationID: "getKerberosAuth",
-		Middlewares: huma.Middlewares{middlewares.SPNEGO(ctrl.logger, ctrl.config.KeytabPath)},
+		Middlewares: huma.Middlewares{middlewares.SPNEGO(ctrl.logger, ctrl.env.KeytabPath)},
 	}, ctrl.getKerberosAuth)
 }
 

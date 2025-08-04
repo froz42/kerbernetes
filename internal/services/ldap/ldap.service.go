@@ -3,7 +3,7 @@ package ldapsvc
 import (
 	"fmt"
 
-	configsvc "github.com/froz42/kerbernetes/internal/services/config"
+	envsvc "github.com/froz42/kerbernetes/internal/services/env"
 	"github.com/go-ldap/ldap/v3"
 	"github.com/samber/do"
 )
@@ -17,19 +17,19 @@ type LDAPSvc interface {
 }
 
 type ldapSvc struct {
-	config configsvc.Config
+	env envsvc.Env
 }
 
 func NewProvider() func(i *do.Injector) (LDAPSvc, error) {
 	return func(i *do.Injector) (LDAPSvc, error) {
-		config := do.MustInvoke[configsvc.ConfigService](i).GetConfig()
+		config := do.MustInvoke[envsvc.EnvSvc](i).GetEnv()
 		return New(config)
 	}
 }
 
-func New(config configsvc.Config) (LDAPSvc, error) {
+func New(env envsvc.Env) (LDAPSvc, error) {
 	return &ldapSvc{
-		config: config,
+		env: env,
 	}, nil
 }
 
@@ -38,9 +38,9 @@ func (s *ldapSvc) GetUser(username string) (*ldap.Entry, error) {
 	var user *ldap.Entry
 	err := s.withConnection(func(conn *ldap.Conn) error {
 		searchRequest := ldap.NewSearchRequest(
-			s.config.LDAPUserBaseDN,
+			s.env.LDAPUserBaseDN,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf(s.config.LDAPUserFilter, username),
+			fmt.Sprintf(s.env.LDAPUserFilter, username),
 			[]string{"dn"},
 			nil,
 		)
@@ -69,11 +69,11 @@ func (s *ldapSvc) GetUser(username string) (*ldap.Entry, error) {
 func (s *ldapSvc) GetUserGroups(dn string) ([]string, error) {
 	var groups []string
 	err := s.withConnection(func(conn *ldap.Conn) error {
-		fmt.Printf(s.config.LDAPGroupFilter, dn)
+		fmt.Printf(s.env.LDAPGroupFilter, dn)
 		searchRequest := ldap.NewSearchRequest(
-			s.config.LDAPGroupBaseDN,
+			s.env.LDAPGroupBaseDN,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf(s.config.LDAPGroupFilter, dn),
+			fmt.Sprintf(s.env.LDAPGroupFilter, dn),
 			[]string{"dn"},
 			nil,
 		)
@@ -95,13 +95,13 @@ func (s *ldapSvc) GetUserGroups(dn string) ([]string, error) {
 
 // WithConnection handles connection setup, bind, and cleanup per operation
 func (s *ldapSvc) withConnection(fn func(conn *ldap.Conn) error) error {
-	conn, err := ldap.DialURL(s.config.LDAPURL)
+	conn, err := ldap.DialURL(s.env.LDAPURL)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	if err := conn.Bind(s.config.LDAPBindDN, s.config.LDAPBindPassword); err != nil {
+	if err := conn.Bind(s.env.LDAPBindDN, s.env.LDAPBindPassword); err != nil {
 		return err
 	}
 

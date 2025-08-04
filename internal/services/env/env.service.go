@@ -1,4 +1,4 @@
-package configsvc
+package envsvc
 
 import (
 	"reflect"
@@ -10,7 +10,7 @@ import (
 )
 
 // Config represents the configuration options for the service.
-type Config struct {
+type Env struct {
 	HTTPPort   int    `mapstructure:"HTTP_PORT"  default:"3000" validate:"required"`
 	APIPrefix  string `mapstructure:"API_PREFIX" default:"/api" validate:"required"`
 	KeytabPath string `mapstructure:"KEYTAB_PATH" default:"/etc/krb5.keytab" validate:"required"`
@@ -32,16 +32,16 @@ type Config struct {
 }
 
 // ConfigService is the interface for the config service.
-type ConfigService interface {
-	GetConfig() Config
+type EnvSvc interface {
+	GetEnv() Env
 }
 
 type configService struct {
-	config Config
+	env Env
 }
 
 func automaticBindEnv() {
-	v := reflect.ValueOf(&Config{})
+	v := reflect.ValueOf(&Env{})
 	t := v.Elem().Type()
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -53,8 +53,8 @@ func automaticBindEnv() {
 	}
 }
 
-func NewProvider() func(i *do.Injector) (ConfigService, error) {
-	return func(i *do.Injector) (ConfigService, error) {
+func NewProvider() func(i *do.Injector) (EnvSvc, error) {
+	return func(i *do.Injector) (EnvSvc, error) {
 		return New()
 	}
 }
@@ -63,7 +63,7 @@ func NewProvider() func(i *do.Injector) (ConfigService, error) {
 // It reads the configuration from the environment variables.
 // If the environment variables are not set, it uses the default values.
 // It returns an error if the configuration is invalid.
-func New() (ConfigService, error) {
+func New() (EnvSvc, error) {
 	viper.AddConfigPath(".")
 	viper.SetConfigType("env")
 	viper.SetConfigName(".env")
@@ -73,24 +73,24 @@ func New() (ConfigService, error) {
 	viper.AutomaticEnv()
 	automaticBindEnv()
 
-	config := &Config{}
-	err := viper.Unmarshal(config)
+	env := &Env{}
+	err := viper.Unmarshal(env)
 	if err != nil {
 		return nil, err
 	}
 
-	defaults.SetDefaults(config)
+	defaults.SetDefaults(env)
 
-	err = validator.New().Struct(config)
+	err = validator.New().Struct(env)
 	if err != nil {
 		return nil, err
 	}
 	return &configService{
-		config: *config,
+		env: *env,
 	}, nil
 }
 
 // GetConfig returns the configuration options for the service.
-func (c *configService) GetConfig() Config {
-	return c.config
+func (c *configService) GetEnv() Env {
+	return c.env
 }
