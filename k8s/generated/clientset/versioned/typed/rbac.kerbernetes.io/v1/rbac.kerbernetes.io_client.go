@@ -20,8 +20,8 @@ type RbacKerbenetesV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *RbacKerbenetesV1Client) LdapClusterRoleBindings(namespace string) LdapClusterRoleBindingInterface {
-	return newLdapClusterRoleBindings(c, namespace)
+func (c *RbacKerbenetesV1Client) LdapClusterRoleBindings() LdapClusterRoleBindingInterface {
+	return newLdapClusterRoleBindings(c)
 }
 
 // NewForConfig creates a new RbacKerbenetesV1Client for the given config.

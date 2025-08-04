@@ -31,7 +31,6 @@ type ldapClusterRoleBindingService struct {
 	informer cache.SharedIndexInformer
 	stopCh   chan struct{}
 
-	defaultNamespace string
 }
 
 func NewProvider() func(i *do.Injector) (LdapClusterRoleBindingService, error) {
@@ -54,7 +53,6 @@ func New(logger *slog.Logger, k8sSvc k8ssvc.K8sService) (LdapClusterRoleBindingS
 		clientSet: cs,
 		cache:     []*v1.LdapClusterRoleBinding{},
 		stopCh:    make(chan struct{}),
-		defaultNamespace: k8sSvc.GetNamespace(),
 	}
 
 	svc.initInformer()
@@ -67,10 +65,10 @@ func (svc *ldapClusterRoleBindingService) initInformer() {
 	svc.informer = cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return svc.clientSet.LdapClusterRoleBindings(svc.defaultNamespace).List(context.TODO(), options)
+				return svc.clientSet.LdapClusterRoleBindings().List(context.TODO(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return svc.clientSet.LdapClusterRoleBindings(svc.defaultNamespace).Watch(context.TODO(), options)
+				return svc.clientSet.LdapClusterRoleBindings().Watch(context.TODO(), options)
 			},
 		},
 		&v1.LdapClusterRoleBinding{},

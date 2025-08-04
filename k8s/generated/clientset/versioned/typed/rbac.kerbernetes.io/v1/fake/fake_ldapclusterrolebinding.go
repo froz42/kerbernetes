@@ -15,11 +15,11 @@ type fakeLdapClusterRoleBindings struct {
 	Fake *FakeRbacKerbenetesV1
 }
 
-func newFakeLdapClusterRoleBindings(fake *FakeRbacKerbenetesV1, namespace string) typedrbackerbernetesiov1.LdapClusterRoleBindingInterface {
+func newFakeLdapClusterRoleBindings(fake *FakeRbacKerbenetesV1) typedrbackerbernetesiov1.LdapClusterRoleBindingInterface {
 	return &fakeLdapClusterRoleBindings{
 		gentype.NewFakeClientWithListAndApply[*v1.LdapClusterRoleBinding, *v1.LdapClusterRoleBindingList, *rbackerbernetesiov1.LdapClusterRoleBindingApplyConfiguration](
 			fake.Fake,
-			namespace,
+			"",
 			v1.SchemeGroupVersion.WithResource("ldapclusterrolebindings"),
 			v1.SchemeGroupVersion.WithKind("LdapClusterRoleBinding"),
 			func() *v1.LdapClusterRoleBinding { return &v1.LdapClusterRoleBinding{} },

@@ -15,8 +15,9 @@ type LdapClusterRoleBindingLister interface {
 	// List lists all LdapClusterRoleBindings in the indexer.
 	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*rbackerbernetesiov1.LdapClusterRoleBinding, err error)
-	// LdapClusterRoleBindings returns an object that can list and get LdapClusterRoleBindings.
-	LdapClusterRoleBindings(namespace string) LdapClusterRoleBindingNamespaceLister
+	// Get retrieves the LdapClusterRoleBinding from the index for a given name.
+	// Objects returned here must be treated as read-only.
+	Get(name string) (*rbackerbernetesiov1.LdapClusterRoleBinding, error)
 	LdapClusterRoleBindingListerExpansion
 }
 
@@ -28,27 +29,4 @@ type ldapClusterRoleBindingLister struct {
 // NewLdapClusterRoleBindingLister returns a new LdapClusterRoleBindingLister.
 func NewLdapClusterRoleBindingLister(indexer cache.Indexer) LdapClusterRoleBindingLister {
 	return &ldapClusterRoleBindingLister{listers.New[*rbackerbernetesiov1.LdapClusterRoleBinding](indexer, rbackerbernetesiov1.Resource("ldapclusterrolebinding"))}
-}
-
-// LdapClusterRoleBindings returns an object that can list and get LdapClusterRoleBindings.
-func (s *ldapClusterRoleBindingLister) LdapClusterRoleBindings(namespace string) LdapClusterRoleBindingNamespaceLister {
-	return ldapClusterRoleBindingNamespaceLister{listers.NewNamespaced[*rbackerbernetesiov1.LdapClusterRoleBinding](s.ResourceIndexer, namespace)}
-}
-
-// LdapClusterRoleBindingNamespaceLister helps list and get LdapClusterRoleBindings.
-// All objects returned here must be treated as read-only.
-type LdapClusterRoleBindingNamespaceLister interface {
-	// List lists all LdapClusterRoleBindings in the indexer for a given namespace.
-	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*rbackerbernetesiov1.LdapClusterRoleBinding, err error)
-	// Get retrieves the LdapClusterRoleBinding from the indexer for a given namespace and name.
-	// Objects returned here must be treated as read-only.
-	Get(name string) (*rbackerbernetesiov1.LdapClusterRoleBinding, error)
-	LdapClusterRoleBindingNamespaceListerExpansion
-}
-
-// ldapClusterRoleBindingNamespaceLister implements the LdapClusterRoleBindingNamespaceLister
-// interface.
-type ldapClusterRoleBindingNamespaceLister struct {
-	listers.ResourceIndexer[*rbackerbernetesiov1.LdapClusterRoleBinding]
 }

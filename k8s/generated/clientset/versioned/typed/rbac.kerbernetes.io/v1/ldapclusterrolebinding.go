@@ -17,7 +17,7 @@ import (
 // LdapClusterRoleBindingsGetter has a method to return a LdapClusterRoleBindingInterface.
 // A group's client should implement this interface.
 type LdapClusterRoleBindingsGetter interface {
-	LdapClusterRoleBindings(namespace string) LdapClusterRoleBindingInterface
+	LdapClusterRoleBindings() LdapClusterRoleBindingInterface
 }
 
 // LdapClusterRoleBindingInterface has methods to work with LdapClusterRoleBinding resources.
@@ -40,13 +40,13 @@ type ldapClusterRoleBindings struct {
 }
 
 // newLdapClusterRoleBindings returns a LdapClusterRoleBindings
-func newLdapClusterRoleBindings(c *RbacKerbenetesV1Client, namespace string) *ldapClusterRoleBindings {
+func newLdapClusterRoleBindings(c *RbacKerbenetesV1Client) *ldapClusterRoleBindings {
 	return &ldapClusterRoleBindings{
 		gentype.NewClientWithListAndApply[*rbackerbernetesiov1.LdapClusterRoleBinding, *rbackerbernetesiov1.LdapClusterRoleBindingList, *applyconfigurationrbackerbernetesiov1.LdapClusterRoleBindingApplyConfiguration](
 			"ldapclusterrolebindings",
 			c.RESTClient(),
 			scheme.ParameterCodec,
-			namespace,
+			"",
 			func() *rbackerbernetesiov1.LdapClusterRoleBinding {
 				return &rbackerbernetesiov1.LdapClusterRoleBinding{}
 			},

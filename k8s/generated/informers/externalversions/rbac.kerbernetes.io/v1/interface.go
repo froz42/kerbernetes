@@ -25,5 +25,5 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 
 // LdapClusterRoleBindings returns a LdapClusterRoleBindingInformer.
 func (v *version) LdapClusterRoleBindings() LdapClusterRoleBindingInformer {
-	return &ldapClusterRoleBindingInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &ldapClusterRoleBindingInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

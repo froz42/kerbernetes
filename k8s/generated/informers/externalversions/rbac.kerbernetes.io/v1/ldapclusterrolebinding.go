@@ -26,45 +26,44 @@ type LdapClusterRoleBindingInformer interface {
 type ldapClusterRoleBindingInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
-	namespace        string
 }
 
 // NewLdapClusterRoleBindingInformer constructs a new informer for LdapClusterRoleBinding type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewLdapClusterRoleBindingInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredLdapClusterRoleBindingInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewLdapClusterRoleBindingInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredLdapClusterRoleBindingInformer(client, resyncPeriod, indexers, nil)
 }
 
 // NewFilteredLdapClusterRoleBindingInformer constructs a new informer for LdapClusterRoleBinding type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredLdapClusterRoleBindingInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredLdapClusterRoleBindingInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.RbacKerbenetesV1().LdapClusterRoleBindings(namespace).List(context.Background(), options)
+				return client.RbacKerbenetesV1().LdapClusterRoleBindings().List(context.Background(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.RbacKerbenetesV1().LdapClusterRoleBindings(namespace).Watch(context.Background(), options)
+				return client.RbacKerbenetesV1().LdapClusterRoleBindings().Watch(context.Background(), options)
 			},
 			ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.RbacKerbenetesV1().LdapClusterRoleBindings(namespace).List(ctx, options)
+				return client.RbacKerbenetesV1().LdapClusterRoleBindings().List(ctx, options)
 			},
 			WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.RbacKerbenetesV1().LdapClusterRoleBindings(namespace).Watch(ctx, options)
+				return client.RbacKerbenetesV1().LdapClusterRoleBindings().Watch(ctx, options)
 			},
 		},
 		&apirbackerbernetesiov1.LdapClusterRoleBinding{},
@@ -74,7 +73,7 @@ func NewFilteredLdapClusterRoleBindingInformer(client versioned.Interface, names
 }
 
 func (f *ldapClusterRoleBindingInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredLdapClusterRoleBindingInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+	return NewFilteredLdapClusterRoleBindingInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
 func (f *ldapClusterRoleBindingInformer) Informer() cache.SharedIndexInformer {

@@ -18,10 +18,9 @@ type LdapClusterRoleBindingApplyConfiguration struct {
 
 // LdapClusterRoleBinding constructs a declarative configuration of the LdapClusterRoleBinding type for use with
 // apply.
-func LdapClusterRoleBinding(name, namespace string) *LdapClusterRoleBindingApplyConfiguration {
+func LdapClusterRoleBinding(name string) *LdapClusterRoleBindingApplyConfiguration {
 	b := &LdapClusterRoleBindingApplyConfiguration{}
 	b.WithName(name)
-	b.WithNamespace(namespace)
 	b.WithKind("LdapClusterRoleBinding")
 	b.WithAPIVersion("rbac.kerbernetes.io/v1")
 	return b
