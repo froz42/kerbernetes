@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/froz42/kerbernetes/internal/openapi"
 	"github.com/froz42/kerbernetes/internal/services"
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
+	ldapclusterrolebindingssvc "github.com/froz42/kerbernetes/internal/services/ldapclusterrolebindings"
 	"github.com/go-chi/chi/v5"
 	"github.com/samber/do"
 
@@ -38,11 +40,25 @@ func apiBootstrap() {
 	injector := do.New()
 	do.ProvideValue(injector, logger)
 	err := services.InitServices(injector)
-
 	if err != nil {
 		logger.Error("Failed to initialize services", "error", err)
 		os.Exit(1)
 	}
+
+	svc := do.MustInvoke[ldapclusterrolebindingssvc.LdapClusterRoleBindingService](injector)
+	if err != nil {
+		logger.Error("Failed to reconcile LDAP Cluster Role Bindings", "error", err)
+		os.Exit(1)
+	}
+
+	go func() {
+		err = svc.Start(context.Background())
+		if err != nil {
+			logger.Error("Failed to start LDAP Cluster Role Bindings service", "error", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Reconciled %d LDAP Cluster Role Bindings\n", len(svc.GetBindings()))
+	}()
 
 	env := do.MustInvoke[envsvc.EnvSvc](injector).GetEnv()
 

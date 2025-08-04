@@ -22,13 +22,23 @@ type K8sService interface {
 
 	// IssueToken creates a token for the service account
 	IssueToken(ctx context.Context, username string) (*authv1.TokenRequest, error)
+
+	// GetNamespace retrieves the namespace from the service account or uses the configured namespace
+	GetNamespace() string
+
+	// GetClientset returns the Kubernetes clientset
+	GetClientset() *kubernetes.Clientset
+
+	// GetRestConfig returns the REST configuration for the Kubernetes client
+	GetRestConfig() *rest.Config
 }
 
 type k8sService struct {
-	env       envsvc.Env
-	clientset *kubernetes.Clientset
-	logger    *slog.Logger
-	namespace string
+	env        envsvc.Env
+	clientset  *kubernetes.Clientset
+	logger     *slog.Logger
+	namespace  string
+	restConfig *rest.Config
 }
 
 func NewProvider() func(i *do.Injector) (K8sService, error) {
@@ -45,16 +55,30 @@ func New(logger *slog.Logger, apiConfig envsvc.Env) (K8sService, error) {
 		return nil, err
 	}
 
-	clientset, err := createK8sClient(logger)
+	restConfig, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, err
+		logger.Warn("Failed to create in-cluster config, falling back to kubeconfig", "error", err)
+
+		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+		clientConfig := clientcmd.NewInteractiveDeferredLoadingClientConfig(
+			loadingRules,
+			nil,
+			nil,
+		)
+		restConfig, err = clientConfig.ClientConfig()
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	clientset, err := kubernetes.NewForConfig(restConfig)
 
 	return &k8sService{
 		clientset: clientset,
 		env:       apiConfig,
 		logger:    logger.With("service", "k8s"),
 		namespace: namespace,
+		restConfig: restConfig,
 	}, nil
 }
 
@@ -93,6 +117,21 @@ func (svc *k8sService) IssueToken(ctx context.Context, username string) (*authv1
 	return token, nil
 }
 
+// GetNamespace retrieves the namespace from the service account or uses the configured namespace.
+func (svc *k8sService) GetNamespace() string {
+	return svc.namespace
+}
+
+// GetClientset returns the Kubernetes clientset.
+func (svc *k8sService) GetClientset() *kubernetes.Clientset {
+	return svc.clientset
+}
+
+// GetRestConfig returns the REST configuration for the Kubernetes client.
+func (svc *k8sService) GetRestConfig() *rest.Config {
+	return svc.restConfig
+}
+
 func (svc *k8sService) createServiceAccount(ctx context.Context, username string) (*corev1.ServiceAccount, error) {
 	sa, err := svc.clientset.CoreV1().
 		ServiceAccounts(svc.namespace).
@@ -126,29 +165,4 @@ func getNamespace(env envsvc.Env, logger *slog.Logger) (string, error) {
 		logger.Warn("Failed to read namespace from service account, using configured namespace", "error", err, "namespace", namespace)
 	}
 	return namespace, nil
-}
-
-// createK8sClient creates a Kubernetes clientset using in-cluster configuration or kubeconfig.
-func createK8sClient(logger *slog.Logger) (*kubernetes.Clientset, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		logger.Warn("Failed to create in-cluster config, falling back to kubeconfig", "error", err)
-
-		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-		clientConfig := clientcmd.NewInteractiveDeferredLoadingClientConfig(
-			loadingRules,
-			nil,
-			nil,
-		)
-		config, err = clientConfig.ClientConfig()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-	return clientset, nil
 }

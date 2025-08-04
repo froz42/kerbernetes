@@ -5,6 +5,7 @@ import (
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
 	k8ssvc "github.com/froz42/kerbernetes/internal/services/k8s"
 	ldapsvc "github.com/froz42/kerbernetes/internal/services/ldap"
+	ldapclusterrolebindingssvc "github.com/froz42/kerbernetes/internal/services/ldapclusterrolebindings"
 	"github.com/samber/do"
 )
 
@@ -13,5 +14,6 @@ func InitServices(i *do.Injector) error {
 	do.Provide(i, authsvc.NewProvider())
 	do.Provide(i, k8ssvc.NewProvider())
 	do.Provide(i, ldapsvc.NewProvider())
+	do.Provide(i, ldapclusterrolebindingssvc.NewProvider())
 	return nil
 }

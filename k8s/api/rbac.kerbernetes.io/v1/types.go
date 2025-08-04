@@ -26,7 +26,7 @@ type LdapClusterRoleBindingList struct {
 
 // LdapClusterRoleBindingSpec defines the desired state of LdapClusterRoleBinding
 type LdapClusterRoleBindingSpec struct {
-	LdapGroup      string `json:"ldapGroup"`
+	LdapGroupDN      string `json:"ldapGroupDN"`
 	ClusterRoleRef struct {
 		Name string `json:"name"`
 	} `json:"clusterRoleRef"`
