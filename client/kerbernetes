@@ -34,20 +34,36 @@ log_error()    { log "error: $@" >&2; }
 if [ -f "$CACHE_FILE" ]; then
     EXPIRY=$(jq -r '.status.expirationTimestamp' "$CACHE_FILE" 2>/dev/null || echo "")
     [ -z "$EXPIRY" ] && log_invalid && exit 1
-
+    
     NOW_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     [ "$EXPIRY" \> "$NOW_UTC" ] && cat "$CACHE_FILE" && exit 0
-
+    
     log_expired
 fi
 
 
-RESPONSE=$(curl -sSf --negotiate -u : "$auth_url" 2>/dev/null || true)
+TMPFILE=$(mktemp)
+HTTP_CODE=$(curl -sS --negotiate -u : -o "$TMPFILE" -w "%{http_code}" "$auth_url")
+CURL_EXIT=$?
 
-if [ -z "$RESPONSE" ]; then
-    log_error "failed to fetch credentials from ${auth_url}"
+BODY=$(cat "$TMPFILE")
+rm -f "$TMPFILE"
+
+if [ $CURL_EXIT -ne 0 ]; then
+    log_error "curl failed to connect (exit code $CURL_EXIT)"
     exit 1
 fi
+
+if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+    log_error "Server returned HTTP $HTTP_CODE, did you kinit?"
+    log_error "Response body: $BODY"
+    exit 1
+fi
+
+echo "$BODY" > "$CACHE_FILE"
+log_created
+cat "$CACHE_FILE"
+
 
 echo "$RESPONSE" > "$CACHE_FILE"
 
