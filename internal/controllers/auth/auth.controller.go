@@ -10,13 +10,11 @@ import (
 	"github.com/froz42/kerbernetes/internal/security"
 	authsvc "github.com/froz42/kerbernetes/internal/services/auth"
 	configservice "github.com/froz42/kerbernetes/internal/services/config"
-	k8ssvc "github.com/froz42/kerbernetes/internal/services/k8s"
 	"github.com/samber/do"
 )
 
 type authController struct {
 	authSvc authsvc.AuthService
-	k8sSvc  k8ssvc.K8sService
 	config  configservice.Config
 	logger  *slog.Logger
 }
@@ -24,7 +22,6 @@ type authController struct {
 func Init(api huma.API, injector *do.Injector) {
 	authController := &authController{
 		authSvc: do.MustInvoke[authsvc.AuthService](injector),
-		k8sSvc:  do.MustInvoke[k8ssvc.K8sService](injector),
 		config:  do.MustInvoke[configservice.ConfigService](injector).GetConfig(),
 		logger:  do.MustInvoke[*slog.Logger](injector),
 	}
@@ -51,7 +48,7 @@ func (ctrl *authController) getKerberosAuth(
 	if err != nil {
 		return nil, err
 	}
-	creds, err := ctrl.k8sSvc.AuthAccount(ctx, principal)
+	creds, err := ctrl.authSvc.AuthAccount(ctx, principal)
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Unauthorized", errors.New("failed to authenticate user on Kubernetes"))
 	}
