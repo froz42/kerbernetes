@@ -73,7 +73,6 @@ func (s *ldapSvc) GetUser(username string) (*ldap.Entry, error) {
 func (s *ldapSvc) GetUserGroups(dn string) ([]string, error) {
 	var groups []string
 	err := s.withConnection(func(conn *ldap.Conn) error {
-		fmt.Printf(s.env.LDAPGroupFilter, dn)
 		searchRequest := ldap.NewSearchRequest(
 			s.env.LDAPGroupBaseDN,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
