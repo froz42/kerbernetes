@@ -2,6 +2,7 @@ package ldapsvc
 
 import (
 	"fmt"
+	"log/slog"
 
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
 	"github.com/go-ldap/ldap/v3"
@@ -11,25 +12,28 @@ import (
 type LDAPSvc interface {
 	// GetUser retrieves a user from LDAP by username
 	GetUser(username string) (*ldap.Entry, error)
-	
+
 	// GetUserGroups retrieves groups for a user from LDAP
 	GetUserGroups(dn string) ([]string, error)
 }
 
 type ldapSvc struct {
-	env envsvc.Env
+	env    envsvc.Env
+	logger *slog.Logger
 }
 
 func NewProvider() func(i *do.Injector) (LDAPSvc, error) {
 	return func(i *do.Injector) (LDAPSvc, error) {
 		config := do.MustInvoke[envsvc.EnvSvc](i).GetEnv()
-		return New(config)
+		logger := do.MustInvoke[*slog.Logger](i)
+		return New(config, logger)
 	}
 }
 
-func New(env envsvc.Env) (LDAPSvc, error) {
+func New(env envsvc.Env, logger *slog.Logger) (LDAPSvc, error) {
 	return &ldapSvc{
-		env: env,
+		env:    env,
+		logger: logger.With("service", "ldap"),
 	}, nil
 }
 
@@ -99,7 +103,12 @@ func (s *ldapSvc) withConnection(fn func(conn *ldap.Conn) error) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			s.logger.Error("Failed to close LDAP connection", "error", err)
+		}
+	}()
 
 	if err := conn.Bind(s.env.LDAPBindDN, s.env.LDAPBindPassword); err != nil {
 		return err

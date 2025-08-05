@@ -27,8 +27,8 @@ type Env struct {
 	LDAPUserBaseDN string `mapstructure:"LDAP_USER_BASE_DN" default:"ou=users"`
 	LDAPUserFilter string `mapstructure:"LDAP_USER_FILTER" default:"(uid=%s)"`
 
-	LDAPGroupBaseDN        string `mapstructure:"LDAP_GROUP_BASE_DN" default:"ou=groups"`
-	LDAPGroupFilter        string `mapstructure:"LDAP_GROUP_FILTER" default:"((member=%s)"`
+	LDAPGroupBaseDN string `mapstructure:"LDAP_GROUP_BASE_DN" default:"ou=groups"`
+	LDAPGroupFilter string `mapstructure:"LDAP_GROUP_FILTER" default:"((member=%s)"`
 }
 
 // ConfigService is the interface for the config service.

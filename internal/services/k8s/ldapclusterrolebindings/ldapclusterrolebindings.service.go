@@ -10,10 +10,10 @@ import (
 	v1 "github.com/froz42/kerbernetes/k8s/api/rbac.kerbernetes.io/v1"
 	clientset "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned/typed/rbac.kerbernetes.io/v1"
 	"github.com/samber/do"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type LdapClusterRoleBindingService interface {
@@ -30,7 +30,6 @@ type ldapClusterRoleBindingService struct {
 
 	informer cache.SharedIndexInformer
 	stopCh   chan struct{}
-
 }
 
 func NewProvider() func(i *do.Injector) (LdapClusterRoleBindingService, error) {
@@ -55,13 +54,16 @@ func New(logger *slog.Logger, k8sSvc k8ssvc.K8sService) (LdapClusterRoleBindingS
 		stopCh:    make(chan struct{}),
 	}
 
-	svc.initInformer()
+	err = svc.initInformer()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize informer: %w", err)
+	}
 
 	return svc, nil
 }
 
 // initInformer sets up the informer with handlers
-func (svc *ldapClusterRoleBindingService) initInformer() {
+func (svc *ldapClusterRoleBindingService) initInformer() error {
 	svc.informer = cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -76,7 +78,7 @@ func (svc *ldapClusterRoleBindingService) initInformer() {
 		cache.Indexers{},
 	)
 
-	svc.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err := svc.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj any) {
 			binding := obj.(*v1.LdapClusterRoleBinding)
 			svc.logger.Info("LdapClusterRoleBinding added", "name", binding.Name)
@@ -93,6 +95,7 @@ func (svc *ldapClusterRoleBindingService) initInformer() {
 			svc.delete(binding)
 		},
 	})
+	return err
 }
 
 func (svc *ldapClusterRoleBindingService) Start(ctx context.Context) error {
@@ -116,7 +119,13 @@ func (svc *ldapClusterRoleBindingService) add(binding *v1.LdapClusterRoleBinding
 	svc.cacheMu.Lock()
 	defer svc.cacheMu.Unlock()
 	svc.cache = append(svc.cache, binding)
-	svc.logger.Info("LdapClusterRoleBinding added to cache", "name", binding.Name, "namespace", binding.Namespace)
+	svc.logger.Info(
+		"LdapClusterRoleBinding added to cache",
+		"name",
+		binding.Name,
+		"namespace",
+		binding.Namespace,
+	)
 }
 
 func (svc *ldapClusterRoleBindingService) update(binding *v1.LdapClusterRoleBinding) {
@@ -141,7 +150,13 @@ func (svc *ldapClusterRoleBindingService) delete(binding *v1.LdapClusterRoleBind
 			out = append(out, b)
 		}
 	}
-	svc.logger.Info("LdapClusterRoleBinding deleted from cache", "name", binding.Name, "namespace", binding.Namespace)
+	svc.logger.Info(
+		"LdapClusterRoleBinding deleted from cache",
+		"name",
+		binding.Name,
+		"namespace",
+		binding.Namespace,
+	)
 	svc.cache = out
 }
 

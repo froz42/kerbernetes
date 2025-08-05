@@ -12,7 +12,7 @@ import (
 	"github.com/froz42/kerbernetes/internal/openapi"
 	"github.com/froz42/kerbernetes/internal/services"
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
-	ldapclusterrolebindingssvc "github.com/froz42/kerbernetes/internal/services/ldapclusterrolebindings"
+	ldapclusterrolebindingssvc "github.com/froz42/kerbernetes/internal/services/k8s/ldapclusterrolebindings"
 	"github.com/go-chi/chi/v5"
 	"github.com/samber/do"
 

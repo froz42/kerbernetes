@@ -45,7 +45,12 @@ func SPNEGO(
 			next(ctx)
 		})
 
-		authHandler := spnego.SPNEGOKRB5Authenticate(inner, kt, service.Logger(l), service.DecodePAC(false))
+		authHandler := spnego.SPNEGOKRB5Authenticate(
+			inner,
+			kt,
+			service.Logger(l),
+			service.DecodePAC(false),
+		)
 		authHandler.ServeHTTP(w, r)
 	}
 }
