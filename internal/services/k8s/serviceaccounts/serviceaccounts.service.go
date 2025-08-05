@@ -43,16 +43,17 @@ func NewProvider() func(i *do.Injector) (ServiceAccountsService, error) {
 		return New(
 			do.MustInvoke[envsvc.EnvSvc](i).GetEnv(),
 			do.MustInvoke[k8ssvc.K8sService](i),
+			do.MustInvoke[*slog.Logger](i),
 		)
 	}
 }
 
-func New(env envsvc.Env, k8sSvc k8ssvc.K8sService) (ServiceAccountsService, error) {
+func New(env envsvc.Env, k8sSvc k8ssvc.K8sService, logger *slog.Logger) (ServiceAccountsService, error) {
 	return &serviceAccountsService{
 		env:       env,
 		clientset: k8sSvc.GetClientset(),
 		namespace: k8sSvc.GetNamespace(),
-		logger:    slog.With("service", "serviceaccounts"),
+		logger:    logger.With("service", "serviceaccounts"),
 	}, nil
 }
 
@@ -117,6 +118,16 @@ func (svc *serviceAccountsService) GetClusterRoleBindings(
 	if err != nil {
 		svc.logger.Error("Failed to get cluster role bindings", "error", err)
 		return nil, err
+	}
+	// filter bindings for the specific service account
+	var filteredBindings []rbacv1.ClusterRoleBinding
+	for _, binding := range bindings.Items {
+		for _, subject := range binding.Subjects {
+			if subject.Kind == "ServiceAccount" && subject.Name == username && subject.Namespace == svc.namespace {
+				filteredBindings = append(filteredBindings, binding)
+				break
+			}
+		}
 	}
 
 	svc.logger.Info(
