@@ -19,6 +19,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
 	"github.com/go-chi/httplog/v3"
+	"github.com/MatusOllah/slogcolor"
 )
 
 var Version = "dev"
@@ -29,10 +30,7 @@ func main() {
 
 // apiBootstrap initializes the API server
 func apiBootstrap() {
-	logFormat := httplog.SchemaECS.Concise(false)
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		ReplaceAttr: logFormat.ReplaceAttr,
-	})).With(
+	logger := slog.New(slogcolor.NewHandler(os.Stderr, slogcolor.DefaultOptions)).With(
 		slog.String("app", "kerbernetes-api"),
 		slog.String("version", Version),
 	)
