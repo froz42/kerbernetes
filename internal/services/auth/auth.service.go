@@ -6,6 +6,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
+	ldapclusterrolebindingssvc "github.com/froz42/kerbernetes/internal/services/k8s/ldapclusterrolebindings"
 	k8smodels "github.com/froz42/kerbernetes/internal/services/k8s/models"
 	serviceaccountssvc "github.com/froz42/kerbernetes/internal/services/k8s/serviceaccounts"
 	ldapsvc "github.com/froz42/kerbernetes/internal/services/ldap"
@@ -17,10 +18,11 @@ type AuthService interface {
 }
 
 type authService struct {
-	env                envsvc.Env
-	serviceAccountsSvc serviceaccountssvc.ServiceAccountsService
-	ldapSvc            ldapsvc.LDAPSvc
-	logger             *slog.Logger
+	env                       envsvc.Env
+	serviceAccountsSvc        serviceaccountssvc.ServiceAccountsService
+	ldapClusterRoleBindingSvc ldapclusterrolebindingssvc.LdapClusterRoleBindingService
+	ldapSvc                   ldapsvc.LDAPSvc
+	logger                    *slog.Logger
 }
 
 func NewProvider() func(i *do.Injector) (AuthService, error) {
@@ -28,6 +30,7 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 		return New(
 			do.MustInvoke[envsvc.EnvSvc](i),
 			do.MustInvoke[serviceaccountssvc.ServiceAccountsService](i),
+			do.MustInvoke[ldapclusterrolebindingssvc.LdapClusterRoleBindingService](i),
 			do.MustInvoke[ldapsvc.LDAPSvc](i),
 			do.MustInvoke[*slog.Logger](i),
 		)
@@ -37,14 +40,16 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 func New(
 	configService envsvc.EnvSvc,
 	serviceAccountsSvc serviceaccountssvc.ServiceAccountsService,
-	ldapsvc ldapsvc.LDAPSvc,
+	ldapClusterRoleBindingSvc ldapclusterrolebindingssvc.LdapClusterRoleBindingService,
+	ldapSvc ldapsvc.LDAPSvc,
 	logger *slog.Logger,
 ) (AuthService, error) {
 	return &authService{
-		env:                configService.GetEnv(),
-		serviceAccountsSvc: serviceAccountsSvc,
-		ldapSvc:            ldapsvc,
-		logger:             logger.With("service", "auth"),
+		env:                       configService.GetEnv(),
+		serviceAccountsSvc:        serviceAccountsSvc,
+		ldapClusterRoleBindingSvc: ldapClusterRoleBindingSvc,
+		ldapSvc:                   ldapSvc,
+		logger:                    logger.With("service", "auth"),
 	}, nil
 }
 
@@ -88,7 +93,7 @@ func (s *authService) AuthAccount(
 		)
 
 		// Reconcile cluster role bindings for the service account
-		err = s.reconciateClusterRoleBindings(ctx, sa.Name)
+		err = s.reconciateClusterRoleBindings(ctx, sa.Name, groups)
 		if err != nil {
 			s.logger.Error(
 				"Failed to reconcile cluster role bindings",
@@ -106,7 +111,7 @@ func (s *authService) AuthAccount(
 	return nil, huma.Error501NotImplemented("Not Implemented")
 }
 
-func (s *authService) reconciateClusterRoleBindings(ctx context.Context, saName string) error {
+func (s *authService) reconciateClusterRoleBindings(ctx context.Context, saName string, groups []string) error {
 	s.logger.Info("Reconciling cluster role bindings for user", "username", saName)
 	bindings, err := s.serviceAccountsSvc.GetClusterRoleBindings(ctx, saName)
 	if err != nil {

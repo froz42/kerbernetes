@@ -2,6 +2,7 @@ package serviceaccountssvc
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
@@ -15,7 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-const saManagedLabel = "kerbernetes.io/managed=true"
+const saManagedLabel = "kerbernetes.io/managed"
 
 type ServiceAccountsService interface {
 	// UpsertServiceAccount retrieves or creates a service account for the given username
@@ -29,6 +30,16 @@ type ServiceAccountsService interface {
 		ctx context.Context,
 		username string,
 	) ([]rbacv1.ClusterRoleBinding, error)
+
+	// CreateClusterRoleBinding creates a cluster role binding for the service account
+	CreateClusterRoleBinding(
+		ctx context.Context,
+		username string,
+		roleName string,
+	) (*rbacv1.ClusterRoleBinding, error)
+
+	// DeleteClusterRoleBinding deletes a cluster role binding by its name
+	DeleteClusterRoleBinding(ctx context.Context, name string) error
 }
 
 type serviceAccountsService struct {
@@ -113,7 +124,7 @@ func (svc *serviceAccountsService) GetClusterRoleBindings(
 		ClusterRoleBindings().
 		List(ctx, metav1.ListOptions{
 			// we only want bindings that are managed by kerbernetes
-			LabelSelector: saManagedLabel,
+			LabelSelector: saManagedLabel + "=true",
 		})
 	if err != nil {
 		svc.logger.Error("Failed to get cluster role bindings", "error", err)
@@ -138,6 +149,62 @@ func (svc *serviceAccountsService) GetClusterRoleBindings(
 		len(bindings.Items),
 	)
 	return bindings.Items, nil
+}
+
+// CreateClusterRoleBinding creates a cluster role binding for the service account.
+func (svc *serviceAccountsService) CreateClusterRoleBinding(
+	ctx context.Context,
+	username string,
+	roleName string,
+) (*rbacv1.ClusterRoleBinding, error) {
+	binding := &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: fmt.Sprintf("%s-%s-binding", username, roleName),
+			Labels: map[string]string{
+				saManagedLabel: "true",
+			},
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      username,
+				Namespace: svc.namespace,
+			},
+		},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "ClusterRole",
+			Name:     roleName,
+		},
+	}
+
+	binding, err := svc.clientset.RbacV1().
+		ClusterRoleBindings().
+		Create(ctx, binding, metav1.CreateOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to create cluster role binding", "error", err)
+		return nil, err
+	}
+
+	svc.logger.Info("Created cluster role binding", "name", binding.Name)
+	return binding, nil
+}
+
+// DeleteClusterRoleBinding deletes a cluster role binding by its name.
+func (svc *serviceAccountsService) DeleteClusterRoleBinding(
+	ctx context.Context,
+	name string,
+) error {
+	err := svc.clientset.RbacV1().
+		ClusterRoleBindings().
+		Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to delete cluster role binding", "error", err)
+		return err
+	}
+
+	svc.logger.Info("Deleted cluster role binding", "name", name)
+	return nil
 }
 
 func (svc *serviceAccountsService) createServiceAccount(

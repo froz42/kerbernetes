@@ -55,7 +55,6 @@ func apiBootstrap() {
 			logger.Error("Failed to start LDAP Cluster Role Bindings service", "error", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Reconciled %d LDAP Cluster Role Bindings\n", len(svc.GetBindings()))
 	}()
 
 	env := do.MustInvoke[envsvc.EnvSvc](injector).GetEnv()
