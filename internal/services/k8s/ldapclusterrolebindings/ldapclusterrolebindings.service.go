@@ -8,11 +8,10 @@ import (
 
 	k8ssvc "github.com/froz42/kerbernetes/internal/services/k8s"
 	v1 "github.com/froz42/kerbernetes/k8s/api/rbac.kerbernetes.io/v1"
-	clientset "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned/typed/rbac.kerbernetes.io/v1"
+	clientset "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned"
+	informers "github.com/froz42/kerbernetes/k8s/generated/informers/externalversions"
+	lcrbinformer "github.com/froz42/kerbernetes/k8s/generated/informers/externalversions/rbac.kerbernetes.io/v1"
 	"github.com/samber/do"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -23,13 +22,14 @@ type LdapClusterRoleBindingService interface {
 
 type ldapClusterRoleBindingService struct {
 	logger    *slog.Logger
-	clientSet *clientset.RbacKerbenetesV1Client
+	clientSet *clientset.Clientset
 
 	cache   []*v1.LdapClusterRoleBinding
 	cacheMu sync.RWMutex
 
-	informer cache.SharedIndexInformer
-	stopCh   chan struct{}
+	informerFactory informers.SharedInformerFactory
+	informer        lcrbinformer.LdapClusterRoleBindingInformer
+	stopCh          chan struct{}
 }
 
 func NewProvider() func(i *do.Injector) (LdapClusterRoleBindingService, error) {
@@ -47,11 +47,16 @@ func New(logger *slog.Logger, k8sSvc k8ssvc.K8sService) (LdapClusterRoleBindingS
 		return nil, err
 	}
 
+	informerFactory := informers.NewSharedInformerFactory(cs, 0)
+	informer := informerFactory.RbacKerbenetes().V1()
+
 	svc := &ldapClusterRoleBindingService{
-		logger:    logger.With("service", "ldapclusterrolebindings"),
-		clientSet: cs,
-		cache:     []*v1.LdapClusterRoleBinding{},
-		stopCh:    make(chan struct{}),
+		logger:          logger.With("service", "ldapclusterrolebindings"),
+		clientSet:       cs,
+		informerFactory: informerFactory,
+		informer:        informer.LdapClusterRoleBindings(),
+		cache:           []*v1.LdapClusterRoleBinding{},
+		stopCh:          make(chan struct{}),
 	}
 
 	err = svc.initInformer()
@@ -64,32 +69,18 @@ func New(logger *slog.Logger, k8sSvc k8ssvc.K8sService) (LdapClusterRoleBindingS
 
 // initInformer sets up the informer with handlers
 func (svc *ldapClusterRoleBindingService) initInformer() error {
-	svc.informer = cache.NewSharedIndexInformer(
-		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return svc.clientSet.LdapClusterRoleBindings().List(context.TODO(), options)
-			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return svc.clientSet.LdapClusterRoleBindings().Watch(context.TODO(), options)
-			},
-		},
-		&v1.LdapClusterRoleBinding{},
-		0,
-		cache.Indexers{},
-	)
-
-	_, err := svc.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj any) {
+	_, err := svc.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
 			binding := obj.(*v1.LdapClusterRoleBinding)
 			svc.logger.Info("LdapClusterRoleBinding added", "name", binding.Name)
 			svc.add(binding)
 		},
-		UpdateFunc: func(_, newObj any) {
+		UpdateFunc: func(_, newObj interface{}) {
 			binding := newObj.(*v1.LdapClusterRoleBinding)
 			svc.logger.Info("LdapClusterRoleBinding updated", "name", binding.Name)
 			svc.update(binding)
 		},
-		DeleteFunc: func(obj any) {
+		DeleteFunc: func(obj interface{}) {
 			binding := obj.(*v1.LdapClusterRoleBinding)
 			svc.logger.Info("LdapClusterRoleBinding deleted", "name", binding.Name)
 			svc.delete(binding)
@@ -101,13 +92,13 @@ func (svc *ldapClusterRoleBindingService) initInformer() error {
 func (svc *ldapClusterRoleBindingService) Start(ctx context.Context) error {
 	svc.logger.Info("Starting LdapClusterRoleBinding informer")
 
-	go svc.informer.Run(svc.stopCh)
+	svc.informerFactory.Start(svc.stopCh)
 
-	if !cache.WaitForCacheSync(svc.stopCh, svc.informer.HasSynced) {
+	if !cache.WaitForCacheSync(svc.stopCh, svc.informer.Informer().HasSynced) {
 		return fmt.Errorf("failed to sync informer cache")
 	}
 
-	svc.logger.Info("LdapClusterRoleBinding informer started and synced", "count", len(svc.cache))
+	svc.logger.Info("LdapClusterRoleBinding informer started and synced")
 	<-ctx.Done()
 	close(svc.stopCh)
 	return nil
@@ -123,8 +114,6 @@ func (svc *ldapClusterRoleBindingService) add(binding *v1.LdapClusterRoleBinding
 		"LdapClusterRoleBinding added to cache",
 		"name",
 		binding.Name,
-		"namespace",
-		binding.Namespace,
 	)
 }
 
@@ -132,11 +121,21 @@ func (svc *ldapClusterRoleBindingService) update(binding *v1.LdapClusterRoleBind
 	svc.cacheMu.Lock()
 	defer svc.cacheMu.Unlock()
 	for i, b := range svc.cache {
-		if b.Name == binding.Name && b.Namespace == binding.Namespace {
+		if b.Name == binding.Name {
 			svc.cache[i] = binding
+			svc.logger.Info(
+				"LdapClusterRoleBinding updated in cache",
+				"name",
+				binding.Name,
+			)
 			return
 		}
 	}
+	svc.logger.Warn(
+		"LdapClusterRoleBinding update called but not found in cache",
+		"name",
+		binding.Name,
+	)
 	// if not found, add
 	svc.cache = append(svc.cache, binding)
 }
@@ -144,9 +143,9 @@ func (svc *ldapClusterRoleBindingService) update(binding *v1.LdapClusterRoleBind
 func (svc *ldapClusterRoleBindingService) delete(binding *v1.LdapClusterRoleBinding) {
 	svc.cacheMu.Lock()
 	defer svc.cacheMu.Unlock()
-	out := svc.cache[:0]
+	out := []*v1.LdapClusterRoleBinding{}
 	for _, b := range svc.cache {
-		if b.Name != binding.Name || b.Namespace != binding.Namespace {
+		if b.Name != binding.Name {
 			out = append(out, b)
 		}
 	}
@@ -154,8 +153,6 @@ func (svc *ldapClusterRoleBindingService) delete(binding *v1.LdapClusterRoleBind
 		"LdapClusterRoleBinding deleted from cache",
 		"name",
 		binding.Name,
-		"namespace",
-		binding.Namespace,
 	)
 	svc.cache = out
 }
