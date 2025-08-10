@@ -1,4 +1,4 @@
-# Kerbernetes
+# Kerbernetes (k10s)
 
 ## Description
 
@@ -14,10 +14,10 @@ Kerbernetes is a Kubernetes-based project that integrates LDAP and Kerberos auth
 
 ### Prerequisites
 
-- Kubernetes cluster
-- KDC server
-- LDAP server (optional, for LDAP group bindings)
-- Helm for deploying the Kerbernetes chart
+- **k8s** cluster
+- **KDC** server
+- **LDAP** server (optional, for LDAP group bindings)
+- **Helm** for deploying the Kerbernetes chart
 
 ## Contributing
 
