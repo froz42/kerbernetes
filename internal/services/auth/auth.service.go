@@ -12,6 +12,7 @@ import (
 	ldapsvc "github.com/froz42/kerbernetes/internal/services/ldap"
 	v1 "github.com/froz42/kerbernetes/k8s/api/rbac.kerbernetes.io/v1"
 	"github.com/samber/do"
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
@@ -68,58 +69,9 @@ func (s *authService) AuthAccount(
 
 	// in case of LDAP we first try to get the user from LDAP
 	if s.env.LDAPEnabled {
-		user, err := s.ldapSvc.GetUser(username)
+		err := s.ldapReconcilate(ctx, username, sa)
 		if err != nil {
-			s.logger.Error("Failed to get user from LDAP", "username", username, "error", err)
-			return nil, huma.Error401Unauthorized("failed to authenticate user on LDAP")
-		}
-		groups, err := s.ldapSvc.GetUserGroups(user.DN)
-		if err != nil {
-			s.logger.Error(
-				"Failed to get user groups from LDAP",
-				"username",
-				username,
-				"error",
-				err,
-			)
-			return nil, huma.Error401Unauthorized("failed to authenticate user on LDAP")
-		}
-		s.logger.Info(
-			"User authenticated via LDAP",
-			"username",
-			username,
-			"dn",
-			user.DN,
-			"groups",
-			groups,
-		)
-		groupsMap := make(map[string]bool)
-		for _, group := range groups {
-			groupsMap[group] = true
-		}
-
-		ldapBindings := s.ldapGroupBindingsSvc.GetBindings()
-		// Filter bindings for the user
-		var userBindings []*v1.LdapGroupBinding
-		for _, binding := range ldapBindings {
-			if _, exists := groupsMap[binding.Spec.LdapGroupDN]; exists {
-				userBindings = append(userBindings, binding)
-			}
-		}
-
-		// Reconcile cluster role bindings for the service account
-		err = s.reconcileClusterAndRoleBindings(ctx, sa.Name, userBindings)
-		if err != nil {
-			s.logger.Error(
-				"Failed to reconcile cluster role bindings",
-				"username",
-				username,
-				"error",
-				err,
-			)
-			return nil, huma.Error500InternalServerError(
-				"Failed to reconcile cluster role bindings",
-			)
+			return nil, err
 		}
 	}
 
@@ -138,6 +90,63 @@ func (s *authService) AuthAccount(
 			ExpirationTimestamp: token.Status.ExpirationTimestamp.Time,
 		},
 	}, nil
+}
+
+func (s *authService) ldapReconcilate(ctx context.Context, username string, sa *corev1.ServiceAccount) error {
+	user, err := s.ldapSvc.GetUser(username)
+	if err != nil {
+		s.logger.Error("Failed to get user from LDAP", "username", username, "error", err)
+		return huma.Error401Unauthorized("failed to authenticate user on LDAP")
+	}
+	groups, err := s.ldapSvc.GetUserGroups(user.DN)
+	if err != nil {
+		s.logger.Error(
+			"Failed to get user groups from LDAP",
+			"username",
+			username,
+			"error",
+			err,
+		)
+		return huma.Error401Unauthorized("failed to authenticate user on LDAP")
+	}
+	s.logger.Info(
+		"User authenticated via LDAP",
+		"username",
+		username,
+		"dn",
+		user.DN,
+		"groups",
+		groups,
+	)
+	groupsMap := make(map[string]bool)
+	for _, group := range groups {
+		groupsMap[group] = true
+	}
+
+	ldapBindings := s.ldapGroupBindingsSvc.GetBindings()
+	// Filter bindings for the user
+	var userBindings []*v1.LdapGroupBinding
+	for _, binding := range ldapBindings {
+		if _, exists := groupsMap[binding.Spec.LdapGroupDN]; exists {
+			userBindings = append(userBindings, binding)
+		}
+	}
+
+	// Reconcile cluster role bindings for the service account
+	err = s.reconcileClusterAndRoleBindings(ctx, sa.Name, userBindings)
+	if err != nil {
+		s.logger.Error(
+			"Failed to reconcile cluster role bindings",
+			"username",
+			username,
+			"error",
+			err,
+		)
+		return huma.Error500InternalServerError(
+			"Failed to reconcile cluster role bindings",
+		)
+	}
+	return nil
 }
 
 func (s *authService) reconcileClusterAndRoleBindings(
