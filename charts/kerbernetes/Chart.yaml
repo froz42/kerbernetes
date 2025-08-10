@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kerbernetes
+description: Kerbernetes is a Kubernetes authentication service that integrates with Kerberos and LDAP for secure access control.
+type: application
+version: "1.0.0"
+appVersion: "1.0.0"

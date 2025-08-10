@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kerbernetes.fullname" . }}
+  labels:
+    app: {{ include "kerbernetes.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "kerbernetes.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "kerbernetes.name" . }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: {{ include "kerbernetes.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: HTTP_PORT
+              value: "{{ .Values.service.port }}"
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secret.name }}
+            - configMapRef:
+                name: {{ include "kerbernetes.fullname" . }}-config
+          volumeMounts:
+            - name: keytab-volume
+              mountPath: /etc/krb5.keytab
+              subPath: krb5.keytab
+              readOnly: true
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 5
+            successThreshold: 1
+            timeoutSeconds: 2
+      volumes:
+        - name: keytab-volume
+          secret:
+            secretName: {{ .Values.secret.name }}

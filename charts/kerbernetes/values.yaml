@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/froz42/kerbernetes
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  hostname: kerbernetes.froz.lan
+  tlsSecretName: kerbernetes-tls
+  annotations: {}
+
