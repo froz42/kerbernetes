@@ -337,6 +337,7 @@ func (s *authService) ensureClusterRoleBinding(
 		}
 	}
 
+	// delete from existing map to track unused bindings
 	delete(existingMap, bindingName)
 	return nil
 }
@@ -416,6 +417,7 @@ func (s *authService) ensureRoleBinding(
 		}
 	}
 
+	// delete from existing map to track unused bindings
 	delete(existingMap, bindingName)
 	return nil
 }
