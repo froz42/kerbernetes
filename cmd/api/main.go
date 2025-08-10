@@ -12,14 +12,14 @@ import (
 	"github.com/froz42/kerbernetes/internal/openapi"
 	"github.com/froz42/kerbernetes/internal/services"
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
-	ldapclusterrolebindingssvc "github.com/froz42/kerbernetes/internal/services/k8s/ldapclusterrolebindings"
+	ldapgroupbindingssvc "github.com/froz42/kerbernetes/internal/services/k8s/ldapgroupbindings"
 	"github.com/go-chi/chi/v5"
 	"github.com/samber/do"
 
+	"github.com/MatusOllah/slogcolor"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
 	"github.com/go-chi/httplog/v3"
-	"github.com/MatusOllah/slogcolor"
 )
 
 var Version = "dev"
@@ -43,16 +43,12 @@ func apiBootstrap() {
 		os.Exit(1)
 	}
 
-	svc := do.MustInvoke[ldapclusterrolebindingssvc.LdapClusterRoleBindingService](injector)
-	if err != nil {
-		logger.Error("Failed to reconcile LDAP Cluster Role Bindings", "error", err)
-		os.Exit(1)
-	}
-
+	svc := do.MustInvoke[ldapgroupbindingssvc.LdapGroupBindingService](injector)
+	
 	go func() {
 		err = svc.Start(context.Background())
 		if err != nil {
-			logger.Error("Failed to start LDAP Cluster Role Bindings service", "error", err)
+			logger.Error("Failed to start LDAP Group Bindings service", "error", err)
 			os.Exit(1)
 		}
 	}()

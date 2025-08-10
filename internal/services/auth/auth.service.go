@@ -6,7 +6,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
-	ldapclusterrolebindingssvc "github.com/froz42/kerbernetes/internal/services/k8s/ldapclusterrolebindings"
+	ldapgroupbindingssvc "github.com/froz42/kerbernetes/internal/services/k8s/ldapgroupbindings"
 	k8smodels "github.com/froz42/kerbernetes/internal/services/k8s/models"
 	serviceaccountssvc "github.com/froz42/kerbernetes/internal/services/k8s/serviceaccounts"
 	ldapsvc "github.com/froz42/kerbernetes/internal/services/ldap"
@@ -18,11 +18,11 @@ type AuthService interface {
 }
 
 type authService struct {
-	env                       envsvc.Env
-	serviceAccountsSvc        serviceaccountssvc.ServiceAccountsService
-	ldapClusterRoleBindingSvc ldapclusterrolebindingssvc.LdapClusterRoleBindingService
-	ldapSvc                   ldapsvc.LDAPSvc
-	logger                    *slog.Logger
+	env                  envsvc.Env
+	serviceAccountsSvc   serviceaccountssvc.ServiceAccountsService
+	ldapGroupBindingsSvc ldapgroupbindingssvc.LdapGroupBindingService
+	ldapSvc              ldapsvc.LDAPSvc
+	logger               *slog.Logger
 }
 
 func NewProvider() func(i *do.Injector) (AuthService, error) {
@@ -30,7 +30,7 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 		return New(
 			do.MustInvoke[envsvc.EnvSvc](i),
 			do.MustInvoke[serviceaccountssvc.ServiceAccountsService](i),
-			do.MustInvoke[ldapclusterrolebindingssvc.LdapClusterRoleBindingService](i),
+			do.MustInvoke[ldapgroupbindingssvc.LdapGroupBindingService](i),
 			do.MustInvoke[ldapsvc.LDAPSvc](i),
 			do.MustInvoke[*slog.Logger](i),
 		)
@@ -40,16 +40,16 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 func New(
 	configService envsvc.EnvSvc,
 	serviceAccountsSvc serviceaccountssvc.ServiceAccountsService,
-	ldapClusterRoleBindingSvc ldapclusterrolebindingssvc.LdapClusterRoleBindingService,
+	ldapGroupBindingsSvc ldapgroupbindingssvc.LdapGroupBindingService,
 	ldapSvc ldapsvc.LDAPSvc,
 	logger *slog.Logger,
 ) (AuthService, error) {
 	return &authService{
-		env:                       configService.GetEnv(),
-		serviceAccountsSvc:        serviceAccountsSvc,
-		ldapClusterRoleBindingSvc: ldapClusterRoleBindingSvc,
-		ldapSvc:                   ldapSvc,
-		logger:                    logger.With("service", "auth"),
+		env:                  configService.GetEnv(),
+		serviceAccountsSvc:   serviceAccountsSvc,
+		ldapGroupBindingsSvc: ldapGroupBindingsSvc,
+		ldapSvc:              ldapSvc,
+		logger:               logger.With("service", "auth"),
 	}, nil
 }
 
