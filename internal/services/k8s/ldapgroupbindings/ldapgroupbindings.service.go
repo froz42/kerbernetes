@@ -17,7 +17,7 @@ import (
 
 type LdapGroupBindingService interface {
 	Start(ctx context.Context) error
-	GetBindings() []v1.LdapGroupBindingSpec
+	GetBindings() []*v1.LdapGroupBinding
 }
 
 type ldapGroupBindingService struct {
@@ -157,14 +157,10 @@ func (svc *ldapGroupBindingService) delete(binding *v1.LdapGroupBinding) {
 	svc.cache = out
 }
 
-func (svc *ldapGroupBindingService) GetBindings() []v1.LdapGroupBindingSpec {
+func (svc *ldapGroupBindingService) GetBindings() []*v1.LdapGroupBinding {
 	svc.cacheMu.RLock()
 	defer svc.cacheMu.RUnlock()
-	// return a copy
-	out := make([]v1.LdapGroupBindingSpec, len(svc.cache))
-	for i, binding := range svc.cache {
-		out[i] = binding.Spec
-	}
-	svc.logger.Info("Returning cached LdapClusterRoleBindings", "count", len(out))
-	return out
+
+	svc.logger.Info("Returning cached LdapClusterRoleBindings", "count", len(svc.cache))
+	return svc.cache
 }

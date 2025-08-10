@@ -35,11 +35,46 @@ type ServiceAccountsService interface {
 	CreateClusterRoleBinding(
 		ctx context.Context,
 		username string,
-		roleName string,
+		clusterRoleName string,
+		ldapGroundBindingName string,
+	) (*rbacv1.ClusterRoleBinding, error)
+
+	UpdateClusterRoleBinding(
+		ctx context.Context,
+		username string,
+		clusterRoleName string,
+		ldapGroundBindingName string,
 	) (*rbacv1.ClusterRoleBinding, error)
 
 	// DeleteClusterRoleBinding deletes a cluster role binding by its name
 	DeleteClusterRoleBinding(ctx context.Context, name string) error
+
+	// GetRolesBindings retrieves the cluster role bindings for a service account
+	GetRoleBindings(
+		ctx context.Context,
+		username string,
+	) ([]rbacv1.RoleBinding, error)
+
+	// CreateRoleBinding creates a role binding for the service account
+	CreateRoleBinding(
+		ctx context.Context,
+		username string,
+		namespace string,
+		ldapGroundBindingName string,
+		roleRef rbacv1.RoleRef,
+	) (*rbacv1.RoleBinding, error)
+
+	// UpdateRoleBinding updates an existing role binding for the service account
+	UpdateRoleBinding(
+		ctx context.Context,
+		username string,
+		namespace string,
+		roleRef rbacv1.RoleRef,
+		ldapGroundBindingName string,
+	) (*rbacv1.RoleBinding, error)
+
+	// DeleteRoleBinding deletes a role binding by its name
+	DeleteRoleBinding(ctx context.Context, namespace string, name string) error
 }
 
 type serviceAccountsService struct {
@@ -59,7 +94,11 @@ func NewProvider() func(i *do.Injector) (ServiceAccountsService, error) {
 	}
 }
 
-func New(env envsvc.Env, k8sSvc k8ssvc.K8sService, logger *slog.Logger) (ServiceAccountsService, error) {
+func New(
+	env envsvc.Env,
+	k8sSvc k8ssvc.K8sService,
+	logger *slog.Logger,
+) (ServiceAccountsService, error) {
 	return &serviceAccountsService{
 		env:       env,
 		clientset: k8sSvc.GetClientset(),
@@ -134,7 +173,8 @@ func (svc *serviceAccountsService) GetClusterRoleBindings(
 	var filteredBindings []rbacv1.ClusterRoleBinding
 	for _, binding := range bindings.Items {
 		for _, subject := range binding.Subjects {
-			if subject.Kind == "ServiceAccount" && subject.Name == username && subject.Namespace == svc.namespace {
+			if subject.Kind == "ServiceAccount" && subject.Name == username &&
+				subject.Namespace == svc.namespace {
 				filteredBindings = append(filteredBindings, binding)
 				break
 			}
@@ -156,10 +196,11 @@ func (svc *serviceAccountsService) CreateClusterRoleBinding(
 	ctx context.Context,
 	username string,
 	roleName string,
+	ldapGroundBindingName string,
 ) (*rbacv1.ClusterRoleBinding, error) {
 	binding := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: fmt.Sprintf("%s-%s-binding", username, roleName),
+			Name: GenBindingName(username, roleName, ldapGroundBindingName),
 			Labels: map[string]string{
 				saManagedLabel: "true",
 			},
@@ -190,6 +231,35 @@ func (svc *serviceAccountsService) CreateClusterRoleBinding(
 	return binding, nil
 }
 
+// UpdateClusterRoleBinding updates an existing cluster role binding for the service account.
+func (svc *serviceAccountsService) UpdateClusterRoleBinding(
+	ctx context.Context,
+	username string,
+	clusterRoleName string,
+	ldapGroundBindingName string,
+) (*rbacv1.ClusterRoleBinding, error) {
+	name := GenBindingName(username, clusterRoleName, ldapGroundBindingName)
+	binding, err := svc.clientset.RbacV1().
+		ClusterRoleBindings().
+		Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to get cluster role binding", "error", err)
+		return nil, err
+	}
+
+	binding.RoleRef.Name = clusterRoleName
+	binding, err = svc.clientset.RbacV1().
+		ClusterRoleBindings().
+		Update(ctx, binding, metav1.UpdateOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to update cluster role binding", "error", err)
+		return nil, err
+	}
+
+	svc.logger.Info("Updated cluster role binding", "name", binding.Name)
+	return binding, nil
+}
+
 // DeleteClusterRoleBinding deletes a cluster role binding by its name.
 func (svc *serviceAccountsService) DeleteClusterRoleBinding(
 	ctx context.Context,
@@ -204,6 +274,128 @@ func (svc *serviceAccountsService) DeleteClusterRoleBinding(
 	}
 
 	svc.logger.Info("Deleted cluster role binding", "name", name)
+	return nil
+}
+
+// GetRoleBindings retrieves the role bindings accross all namespaces for a service account.
+func (svc *serviceAccountsService) GetRoleBindings(
+	ctx context.Context,
+	username string,
+) ([]rbacv1.RoleBinding, error) {
+	bindings, err := svc.clientset.RbacV1().
+		RoleBindings("").
+		List(ctx, metav1.ListOptions{
+			LabelSelector: saManagedLabel + "=true",
+		})
+	if err != nil {
+		svc.logger.Error("Failed to get role bindings", "error", err)
+		return nil, err
+	}
+
+	var filteredBindings []rbacv1.RoleBinding
+	for _, binding := range bindings.Items {
+		for _, subject := range binding.Subjects {
+			if subject.Kind == "ServiceAccount" && subject.Name == username &&
+				subject.Namespace == svc.namespace {
+				filteredBindings = append(filteredBindings, binding)
+				break
+			}
+		}
+	}
+
+	svc.logger.Info(
+		"Retrieved role bindings",
+		"username",
+		username,
+		"count",
+		len(filteredBindings),
+	)
+	return filteredBindings, nil
+}
+
+// CreateRoleBinding creates a role binding for the service account.
+func (svc *serviceAccountsService) CreateRoleBinding(
+	ctx context.Context,
+	username string,
+	namespace string,
+	ldapGroundBindingName string,
+	roleRef rbacv1.RoleRef,
+) (*rbacv1.RoleBinding, error) {
+	name := GenBindingName(username, roleRef.Name, ldapGroundBindingName)
+	binding := &rbacv1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+			Labels: map[string]string{
+				saManagedLabel: "true",
+			},
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      username,
+				Namespace: namespace,
+			},
+		},
+		RoleRef: roleRef,
+	}
+
+	binding, err := svc.clientset.RbacV1().
+		RoleBindings(namespace).
+		Create(ctx, binding, metav1.CreateOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to create role binding", "error", err)
+		return nil, err
+	}
+
+	svc.logger.Info("Created role binding", "name", binding.Name, "namespace", namespace)
+	return binding, nil
+}
+
+// UpdateRoleBinding updates an existing role binding for the service account.
+func (svc *serviceAccountsService) UpdateRoleBinding(
+	ctx context.Context,
+	username string,
+	namespace string,
+	roleRef rbacv1.RoleRef,
+	ldapGroundBindingName string,
+) (*rbacv1.RoleBinding, error) {
+	name := GenBindingName(username, roleRef.Name, ldapGroundBindingName)
+	binding, err := svc.clientset.RbacV1().
+		RoleBindings(namespace).
+		Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to get role binding", "error", err)
+		return nil, err
+	}
+
+	binding.RoleRef = roleRef
+	binding, err = svc.clientset.RbacV1().
+		RoleBindings(namespace).
+		Update(ctx, binding, metav1.UpdateOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to update role binding", "error", err)
+		return nil, err
+	}
+
+	svc.logger.Info("Updated role binding", "name", binding.Name, "namespace", namespace)
+	return binding, nil
+}
+
+// DeleteRoleBinding deletes a role binding by its name and namespace.
+func (svc *serviceAccountsService) DeleteRoleBinding(
+	ctx context.Context,
+	namespace string,
+	name string,
+) error {
+	err := svc.clientset.RbacV1().
+		RoleBindings(namespace).
+		Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil {
+		svc.logger.Error("Failed to delete role binding", "error", err)
+		return err
+	}
+
+	svc.logger.Info("Deleted role binding", "name", name, "namespace", namespace)
 	return nil
 }
 
@@ -225,6 +417,10 @@ func (svc *serviceAccountsService) createServiceAccount(
 
 	svc.logger.Info("Created new service account", "name", sa.Name, "namespace", sa.Namespace)
 	return sa, nil
+}
+
+func GenBindingName(username string, roleName string, ldapGroundBindingName string) string {
+	return fmt.Sprintf("kerbenetes::%s::%s::%s", username, ldapGroundBindingName, roleName)
 }
 
 // int64Ptr is a helper function to create a pointer to an int64 value.

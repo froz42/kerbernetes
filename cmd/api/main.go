@@ -44,7 +44,7 @@ func apiBootstrap() {
 	}
 
 	svc := do.MustInvoke[ldapgroupbindingssvc.LdapGroupBindingService](injector)
-	
+
 	go func() {
 		err = svc.Start(context.Background())
 		if err != nil {
