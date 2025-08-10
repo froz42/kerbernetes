@@ -12,7 +12,7 @@ import (
 
 type RbacKerbenetesV1Interface interface {
 	RESTClient() rest.Interface
-	LdapClusterRoleBindingsGetter
+	LdapGroupBindingsGetter
 }
 
 // RbacKerbenetesV1Client is used to interact with features provided by the rbac.kerbernetes.io group.
@@ -20,8 +20,8 @@ type RbacKerbenetesV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *RbacKerbenetesV1Client) LdapClusterRoleBindings() LdapClusterRoleBindingInterface {
-	return newLdapClusterRoleBindings(c)
+func (c *RbacKerbenetesV1Client) LdapGroupBindings() LdapGroupBindingInterface {
+	return newLdapGroupBindings(c)
 }
 
 // NewForConfig creates a new RbacKerbenetesV1Client for the given config.

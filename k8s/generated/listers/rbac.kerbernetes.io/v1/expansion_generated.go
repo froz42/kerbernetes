@@ -2,6 +2,6 @@
 
 package v1
 
-// LdapClusterRoleBindingListerExpansion allows custom methods to be added to
-// LdapClusterRoleBindingLister.
-type LdapClusterRoleBindingListerExpansion interface{}
+// LdapGroupBindingListerExpansion allows custom methods to be added to
+// LdapGroupBindingLister.
+type LdapGroupBindingListerExpansion interface{}

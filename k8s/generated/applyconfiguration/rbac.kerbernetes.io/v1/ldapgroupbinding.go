@@ -8,20 +8,20 @@ import (
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// LdapClusterRoleBindingApplyConfiguration represents a declarative configuration of the LdapClusterRoleBinding type for use
+// LdapGroupBindingApplyConfiguration represents a declarative configuration of the LdapGroupBinding type for use
 // with apply.
-type LdapClusterRoleBindingApplyConfiguration struct {
+type LdapGroupBindingApplyConfiguration struct {
 	metav1.TypeMetaApplyConfiguration    `json:",inline"`
 	*metav1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                                 *LdapClusterRoleBindingSpecApplyConfiguration `json:"spec,omitempty"`
+	Spec                                 *LdapGroupBindingSpecApplyConfiguration `json:"spec,omitempty"`
 }
 
-// LdapClusterRoleBinding constructs a declarative configuration of the LdapClusterRoleBinding type for use with
+// LdapGroupBinding constructs a declarative configuration of the LdapGroupBinding type for use with
 // apply.
-func LdapClusterRoleBinding(name string) *LdapClusterRoleBindingApplyConfiguration {
-	b := &LdapClusterRoleBindingApplyConfiguration{}
+func LdapGroupBinding(name string) *LdapGroupBindingApplyConfiguration {
+	b := &LdapGroupBindingApplyConfiguration{}
 	b.WithName(name)
-	b.WithKind("LdapClusterRoleBinding")
+	b.WithKind("LdapGroupBinding")
 	b.WithAPIVersion("rbac.kerbernetes.io/v1")
 	return b
 }
@@ -29,7 +29,7 @@ func LdapClusterRoleBinding(name string) *LdapClusterRoleBindingApplyConfigurati
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithKind(value string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithKind(value string) *LdapGroupBindingApplyConfiguration {
 	b.TypeMetaApplyConfiguration.Kind = &value
 	return b
 }
@@ -37,7 +37,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithKind(value string) *LdapC
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithAPIVersion(value string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithAPIVersion(value string) *LdapGroupBindingApplyConfiguration {
 	b.TypeMetaApplyConfiguration.APIVersion = &value
 	return b
 }
@@ -45,7 +45,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithAPIVersion(value string) 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithName(value string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithName(value string) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Name = &value
 	return b
@@ -54,7 +54,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithName(value string) *LdapC
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithGenerateName(value string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithGenerateName(value string) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.GenerateName = &value
 	return b
@@ -63,7 +63,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithGenerateName(value string
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithNamespace(value string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithNamespace(value string) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Namespace = &value
 	return b
@@ -72,7 +72,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithNamespace(value string) *
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithUID(value types.UID) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithUID(value types.UID) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.UID = &value
 	return b
@@ -81,7 +81,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithUID(value types.UID) *Lda
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithResourceVersion(value string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithResourceVersion(value string) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.ResourceVersion = &value
 	return b
@@ -90,7 +90,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithResourceVersion(value str
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithGeneration(value int64) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithGeneration(value int64) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Generation = &value
 	return b
@@ -99,7 +99,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithGeneration(value int64) *
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithCreationTimestamp(value apismetav1.Time) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithCreationTimestamp(value apismetav1.Time) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.CreationTimestamp = &value
 	return b
@@ -108,7 +108,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithCreationTimestamp(value a
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithDeletionTimestamp(value apismetav1.Time) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithDeletionTimestamp(value apismetav1.Time) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionTimestamp = &value
 	return b
@@ -117,7 +117,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithDeletionTimestamp(value a
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionGracePeriodSeconds = &value
 	return b
@@ -127,7 +127,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithDeletionGracePeriodSecond
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithLabels(entries map[string]string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithLabels(entries map[string]string) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Labels == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Labels = make(map[string]string, len(entries))
@@ -142,7 +142,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithLabels(entries map[string
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithAnnotations(entries map[string]string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithAnnotations(entries map[string]string) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Annotations == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Annotations = make(map[string]string, len(entries))
@@ -156,7 +156,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithAnnotations(entries map[s
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithOwnerReferences(values ...*metav1.OwnerReferenceApplyConfiguration) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithOwnerReferences(values ...*metav1.OwnerReferenceApplyConfiguration) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -170,7 +170,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithOwnerReferences(values ..
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithFinalizers(values ...string) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithFinalizers(values ...string) *LdapGroupBindingApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.ObjectMetaApplyConfiguration.Finalizers = append(b.ObjectMetaApplyConfiguration.Finalizers, values[i])
@@ -178,7 +178,7 @@ func (b *LdapClusterRoleBindingApplyConfiguration) WithFinalizers(values ...stri
 	return b
 }
 
-func (b *LdapClusterRoleBindingApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *LdapGroupBindingApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &metav1.ObjectMetaApplyConfiguration{}
 	}
@@ -187,13 +187,13 @@ func (b *LdapClusterRoleBindingApplyConfiguration) ensureObjectMetaApplyConfigur
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *LdapClusterRoleBindingApplyConfiguration) WithSpec(value *LdapClusterRoleBindingSpecApplyConfiguration) *LdapClusterRoleBindingApplyConfiguration {
+func (b *LdapGroupBindingApplyConfiguration) WithSpec(value *LdapGroupBindingSpecApplyConfiguration) *LdapGroupBindingApplyConfiguration {
 	b.Spec = value
 	return b
 }
 
 // GetName retrieves the value of the Name field in the declarative configuration.
-func (b *LdapClusterRoleBindingApplyConfiguration) GetName() *string {
+func (b *LdapGroupBindingApplyConfiguration) GetName() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Name
 }

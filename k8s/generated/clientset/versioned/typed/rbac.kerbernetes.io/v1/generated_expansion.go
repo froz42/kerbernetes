@@ -2,4 +2,4 @@
 
 package v1
 
-type LdapClusterRoleBindingExpansion interface{}
+type LdapGroupBindingExpansion interface{}

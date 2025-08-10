@@ -8,8 +8,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// LdapClusterRoleBindings returns a LdapClusterRoleBindingInformer.
-	LdapClusterRoleBindings() LdapClusterRoleBindingInformer
+	// LdapGroupBindings returns a LdapGroupBindingInformer.
+	LdapGroupBindings() LdapGroupBindingInformer
 }
 
 type version struct {
@@ -23,7 +23,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// LdapClusterRoleBindings returns a LdapClusterRoleBindingInformer.
-func (v *version) LdapClusterRoleBindings() LdapClusterRoleBindingInformer {
-	return &ldapClusterRoleBindingInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+// LdapGroupBindings returns a LdapGroupBindingInformer.
+func (v *version) LdapGroupBindings() LdapGroupBindingInformer {
+	return &ldapGroupBindingInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

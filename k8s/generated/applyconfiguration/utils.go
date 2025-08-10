@@ -16,12 +16,12 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=rbac.kerbernetes.io, Version=v1
-	case v1.SchemeGroupVersion.WithKind("ClusterRoleRef"):
-		return &rbackerbernetesiov1.ClusterRoleRefApplyConfiguration{}
-	case v1.SchemeGroupVersion.WithKind("LdapClusterRoleBinding"):
-		return &rbackerbernetesiov1.LdapClusterRoleBindingApplyConfiguration{}
-	case v1.SchemeGroupVersion.WithKind("LdapClusterRoleBindingSpec"):
-		return &rbackerbernetesiov1.LdapClusterRoleBindingSpecApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("LdapGroupBinding"):
+		return &rbackerbernetesiov1.LdapGroupBindingApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("LdapGroupBindingItem"):
+		return &rbackerbernetesiov1.LdapGroupBindingItemApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("LdapGroupBindingSpec"):
+		return &rbackerbernetesiov1.LdapGroupBindingSpecApplyConfiguration{}
 
 	}
 	return nil

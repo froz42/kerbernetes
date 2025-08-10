@@ -12,8 +12,8 @@ type FakeRbacKerbenetesV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeRbacKerbenetesV1) LdapClusterRoleBindings() v1.LdapClusterRoleBindingInterface {
-	return newFakeLdapClusterRoleBindings(c)
+func (c *FakeRbacKerbenetesV1) LdapGroupBindings() v1.LdapGroupBindingInterface {
+	return newFakeLdapGroupBindings(c)
 }
 
 // RESTClient returns a RESTClient that is used to communicate

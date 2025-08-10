@@ -37,8 +37,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=rbac.kerbernetes.io, Version=v1
-	case v1.SchemeGroupVersion.WithResource("ldapclusterrolebindings"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.RbacKerbenetes().V1().LdapClusterRoleBindings().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("ldapgroupbindings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.RbacKerbenetes().V1().LdapGroupBindings().Informer()}, nil
 
 	}
 
