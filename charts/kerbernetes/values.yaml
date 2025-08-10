@@ -1,17 +1,45 @@
 replicaCount: 1
 
+serviceAccountName: "kerbernetes-api-sa"
+
 image:
-  repository: ghcr.io/froz42/kerbernetes
-  tag: latest
-  pullPolicy: Always
+  repository: "ghcr.io/froz42/kerbernetes"
+  tag: "latest"
+  pullPolicy: "IfNotPresent"
+
+httpPort: 8080
+
+ldap:
+  enabled: false
+  url: "ldap://ldap.example.com"
+  baseDN: "dc=example,dc=com"
+  userBaseDN: "ou=users,dc=example,dc=com"
+  userFilter: "(uid=%s)"
+  groupBaseDN: "ou=groups,dc=example,dc=com"
+  groupFilter: "(cn=%s)"
+  bindDN: ""
 
 service:
   type: ClusterIP
   port: 3000
 
-ingress:
-  enabled: false
-  hostname: kerbernetes.froz.lan
-  tlsSecretName: kerbernetes-tls
-  annotations: {}
+secrets:
+  apiSecret: "api-secret"
+  keytabSecret: "krb5-keytab-secret"
+  ldapSecret: "ldap-secret"
 
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+  timeoutSeconds: 5
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+  timeoutSeconds: 5

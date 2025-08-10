@@ -1,54 +1,76 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "kerbernetes.fullname" . }}
+  name: {{ include "kerbernetes-api.fullname" . }}
   labels:
-    app: {{ include "kerbernetes.name" . }}
+    {{ include "kerbernetes-api.appLabel" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "kerbernetes.name" . }}
+      {{ include "kerbernetes-api.appLabel" . }}
   template:
     metadata:
       labels:
-        app: {{ include "kerbernetes.name" . }}
+        {{ include "kerbernetes-api.appLabel" . }}
     spec:
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
-        - name: {{ include "kerbernetes.name" . }}
+        - name: {{ include "kerbernetes-api.containerName" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: HTTP_PORT
-              value: "{{ .Values.service.port }}"
-          envFrom:
-            - secretRef:
-                name: {{ .Values.secret.name }}
-            - configMapRef:
-                name: {{ include "kerbernetes.fullname" . }}-config
+              value: "{{ .Values.httpPort }}"
+            - name: LDAP_ENABLED
+              value: "{{ .Values.ldap.enabled }}"
+            - name: LDAP_BASE_DN
+              value: "{{ .Values.ldap.baseDN }}"
+            - name: LDAP_USER_BASE_DN
+              value: "{{ .Values.ldap.userBaseDN }}"
+            - name: LDAP_USER_FILTER
+              value: "{{ .Values.ldap.userFilter }}"
+            - name: LDAP_GROUP_BASE_DN
+              value: "{{ .Values.ldap.groupBaseDN }}"
+            - name: LDAP_GROUP_FILTER
+              value: "{{ .Values.ldap.groupFilter }}"
+            - name: LDAP_URL
+              value: "{{ .Values.ldap.url }}"
+            - name: LDAP_BIND_DN
+              value: "{{ .Values.ldap.bindDN }}"
+            {{- if and .Values.ldap.enabled .Values.ldap.existingSecret }}
+            - name: LDAP_BIND_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.ldapSecret }}
+                  key: bindPassword
+            {{- end }}
           volumeMounts:
             - name: keytab-volume
               mountPath: /etc/krb5.keytab
               subPath: krb5.keytab
               readOnly: true
+          {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
             tcpSocket:
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            failureThreshold: 3
-            successThreshold: 1
-            timeoutSeconds: 2
+              port: {{ .Values.httpPort }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             tcpSocket:
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 30
-            periodSeconds: 20
-            failureThreshold: 5
-            successThreshold: 1
-            timeoutSeconds: 2
+              port: {{ .Values.httpPort }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          {{- end }}
       volumes:
         - name: keytab-volume
           secret:
-            secretName: {{ .Values.secret.name }}
+            secretName: {{ .Values.secrets.keytabSecret }}

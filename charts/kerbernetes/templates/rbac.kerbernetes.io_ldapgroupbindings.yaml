@@ -1,0 +1,95 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: ldapgroupbindings.rbac.kerbernetes.io
+spec:
+  group: rbac.kerbernetes.io
+  names:
+    kind: LdapGroupBinding
+    listKind: LdapGroupBindingList
+    plural: ldapgroupbindings
+    singular: ldapgroupbinding
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - description: The LDAP group distinguished name
+      jsonPath: .spec.ldapGroupDN
+      name: LDAP Group
+      type: string
+    - description: Kind of the first binding
+      jsonPath: .spec.bindings[0].kind
+      name: Binding Kind
+      type: string
+    - description: Name of the first binding
+      jsonPath: .spec.bindings[0].name
+      name: Binding Name
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: LdapGroupBinding is the Schema for ldapgroupbinding API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              bindings:
+                items:
+                  properties:
+                    apiGroup:
+                      description: apiGroup is the API group of the resource to bind
+                        to the LDAP group.
+                      type: string
+                    kind:
+                      description: kind is the kind of the resource to bind to the
+                        LDAP group.
+                      enum:
+                      - ClusterRole
+                      - Role
+                      type: string
+                    name:
+                      description: name is the name of the resource to bind to the
+                        LDAP group.
+                      type: string
+                    namespace:
+                      description: |-
+                        namespace is the namespace of the resource to bind to the LDAP group.
+                        This field is required if the kind is Role.
+                      type: string
+                  required:
+                  - apiGroup
+                  - kind
+                  - name
+                  type: object
+                type: array
+              ldapGroupDN:
+                type: string
+            required:
+            - bindings
+            - ldapGroupDN
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources: {}
