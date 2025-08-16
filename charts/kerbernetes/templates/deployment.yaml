@@ -38,7 +38,7 @@ spec:
               value: "{{ .Values.ldap.url }}"
             - name: LDAP_BIND_DN
               value: "{{ .Values.ldap.bindDN }}"
-            {{- if and .Values.ldap.enabled .Values.ldap.existingSecret }}
+            {{- if and .Values.ldap.enabled .Values.secrets.ldapSecret }}
             - name: LDAP_BIND_PASSWORD
               valueFrom:
                 secretKeyRef:

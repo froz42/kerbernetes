@@ -17,16 +17,15 @@ ldap:
   userFilter: "(uid=%s)"
   groupBaseDN: "ou=groups,dc=example,dc=com"
   groupFilter: "(cn=%s)"
-  bindDN: ""
+  bindDN: "cn=read,dc=example,dc=com"
 
 service:
   type: ClusterIP
   port: 3000
 
 secrets:
-  apiSecret: "api-secret"
-  keytabSecret: "krb5-keytab-secret"
-  ldapSecret: "ldap-secret"
+  keytabSecret: "krb5-keytab"
+  ldapSecret: "ldap"
 
 readinessProbe:
   enabled: true
