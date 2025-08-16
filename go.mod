@@ -1,8 +1,6 @@
 module github.com/froz42/kerbernetes
 
-go 1.24.1
-
-toolchain go1.24.3
+go 1.24.6
 
 require (
 	github.com/MatusOllah/slogcolor v1.7.0
@@ -15,7 +13,6 @@ require (
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/samber/do v1.6.0
 	github.com/spf13/viper v1.19.0
-	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.33.3
 	k8s.io/apimachinery v0.33.3
 	k8s.io/client-go v0.33.3
@@ -210,6 +207,7 @@ require (
 	golang.org/x/tools v0.35.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
 	k8s.io/apiextensions-apiserver v0.33.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250207200755-1244d31929d7 // indirect
