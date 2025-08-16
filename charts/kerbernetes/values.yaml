@@ -4,7 +4,7 @@ serviceAccountName: "kerbernetes-api-sa"
 
 image:
   repository: "ghcr.io/froz42/kerbernetes"
-  tag: "v0.0.7"
+  tag: "v1.0.0"
   pullPolicy: "IfNotPresent"
 
 httpPort: 3000
