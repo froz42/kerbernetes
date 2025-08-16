@@ -24,6 +24,7 @@ spec:
               value: "{{ .Values.httpPort }}"
             - name: LDAP_ENABLED
               value: "{{ .Values.ldap.enabled }}"
+            {{- if and .Values.ldap.enabled .Values.secrets.ldapSecret }}
             - name: LDAP_BASE_DN
               value: "{{ .Values.ldap.baseDN }}"
             - name: LDAP_USER_BASE_DN
@@ -38,6 +39,7 @@ spec:
               value: "{{ .Values.ldap.url }}"
             - name: LDAP_BIND_DN
               value: "{{ .Values.ldap.bindDN }}"
+            {{- end }}
             {{- if and .Values.ldap.enabled .Values.secrets.ldapSecret }}
             - name: LDAP_BIND_PASSWORD
               valueFrom:
