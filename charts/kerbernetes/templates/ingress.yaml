@@ -25,7 +25,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ $.Release.Name }}
+                name: {{ include "kerbernetes-api.fullname" . }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}
