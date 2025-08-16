@@ -50,6 +50,8 @@ The following table lists the configurable parameters of the Kerbernetes chart a
 | `ingress.hosts`          | Ingress hosts configuration           | See `values.yaml`             |
 | `ingress.tls`            | Ingress TLS configuration             | `[]`                          |
 
+> **Note**: The `secrets.keytabSecret` parameter is required and must reference a Kubernetes secret containing the key `krb5.keytab`. This key stores the Kerberos keytab file, which is essential for authenticating with the KDC.
+
 ## Customization
 
 You can customize the chart by overriding the default values in `values.yaml`. For example:
