@@ -1,0 +1,41 @@
+name: Publish Helm Chart
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "charts/kerbernetes/Chart.yaml"
+
+env:
+  REGISTRY: ghcr.io
+  HELM_CHART_PATH: charts/kerbernetes
+  HELM_CHART_NAME: kerbernetes
+
+jobs:
+  publish-helm-chart:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.13.0
+
+      - name: Log in to GitHub Container Registry for Helm
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Package Helm chart
+        run: |
+          helm package ${{ env.HELM_CHART_PATH }} --destination ./chart-packages
+
+      - name: Push Helm chart as OCI
+        run: |
+          helm push ./chart-packages/${{ env.HELM_CHART_NAME }}-*.tgz oci://${{ env.REGISTRY }}/${{ github.repository }}
