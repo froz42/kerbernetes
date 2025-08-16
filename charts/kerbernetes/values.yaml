@@ -7,7 +7,7 @@ image:
   tag: "v0.0.7"
   pullPolicy: "IfNotPresent"
 
-httpPort: 8080
+httpPort: 3000
 
 ldap:
   enabled: false
