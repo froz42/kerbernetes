@@ -57,6 +57,11 @@ jobs:
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Package Helm chart
+        run: |
+          helm package ${{ env.HELM_CHART_PATH }} --destination ./chart-packages
+
       - name: Push Helm chart as OCI
         run: |
-          helm push ${{ env.HELM_CHART_PATH }} oci://${{ env.REGISTRY }}/${{ github.repository }}
+          helm push ./chart-packages/${{ env.HELM_CHART_NAME }}-*.tgz oci://${{ env.REGISTRY }}/${{ github.repository }}
+
