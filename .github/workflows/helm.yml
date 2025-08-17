@@ -40,6 +40,10 @@ jobs:
         run: |
           curl -sSL https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_amd64.tar.gz | tar -xz -C /usr/local/bin oras
 
+      - name: Log in to GHCR for ORAS
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Push Artifact Hub metadata
         run: |
           oras push ghcr.io/froz42/kerbernetes/kerbernetes \
