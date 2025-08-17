@@ -36,6 +36,13 @@ jobs:
         run: |
           helm package ${{ env.HELM_CHART_PATH }} --destination ./chart-packages
 
-      - name: Push Helm chart as OCI
+      - name: Install ORAS CLI
         run: |
-          helm push ./chart-packages/${{ env.HELM_CHART_NAME }}-*.tgz oci://${{ env.REGISTRY }}/${{ github.repository }}
+          curl -sSL https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_amd64.tar.gz | tar -xz -C /usr/local/bin oras
+
+      - name: Push Artifact Hub metadata
+        run: |
+          oras push ghcr.io/froz42/kerbernetes/kerbernetes \
+            artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository.metadata.v1+yaml
+
+
