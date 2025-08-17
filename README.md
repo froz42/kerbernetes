@@ -1,5 +1,9 @@
 # Kerbernetes (k10s)
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kerbernetes)](https://artifacthub.io/packages/search?repo=kerbernetes)
+![GitHub License](https://img.shields.io/github/license/froz42/kerbernetes)
+
+
 ![Kerbernetes Logo](assets/kerbernetes_tiny.png)
 
 ## Description
