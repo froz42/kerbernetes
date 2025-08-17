@@ -19,6 +19,15 @@ Kerbernetes is a Kubernetes-based project that integrates LDAP and Kerberos auth
 - **LDAP** server (optional, for LDAP group bindings)
 - **Helm** for deploying the Kerbernetes chart
 
+### Deployment
+
+Kerbernetes can be deployed using Helm. The Helm chart is available on [Artifact Hub](https://artifacthub.io/packages/helm/kerbernetes/kerbernetes).
+
+```bash
+helm repo add froz42 oci://ghcr.io/froz42/kerbernetes
+helm install kerbernetes froz42/kerbernetes
+```
+
 ## Contributing
 
 Contributions are welcome! To contribute:
