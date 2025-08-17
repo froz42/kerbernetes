@@ -16,7 +16,7 @@ ldap:
   userBaseDN: "ou=users,dc=example,dc=com"
   userFilter: "(uid=%s)"
   groupBaseDN: "ou=groups,dc=example,dc=com"
-  groupFilter: "(cn=%s)"
+  groupFilter: "(member=%s)"
   bindDN: "cn=read,dc=example,dc=com"
 
 service:

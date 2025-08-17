@@ -34,7 +34,7 @@ The following table lists the configurable parameters of the Kerbernetes chart a
 | `ldap.userBaseDN`        | User base DN for LDAP                 | `ou=users,dc=example,dc=com`  |
 | `ldap.userFilter`        | User filter for LDAP                  | `(uid=%s)`                    |
 | `ldap.groupBaseDN`       | Group base DN for LDAP                | `ou=groups,dc=example,dc=com` |
-| `ldap.groupFilter`       | Group filter for LDAP                 | `(cn=%s)`                     |
+| `ldap.groupFilter`       | Group filter for LDAP                 | `(member=%s)`                 |
 | `ldap.bindDN`            | Bind DN for LDAP                      | `cn=read,dc=example,dc=com`   |
 | `service.type`           | Kubernetes service type               | `ClusterIP`                   |
 | `service.port`           | Service port                          | `3000`                        |
