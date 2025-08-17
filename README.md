@@ -1,11 +1,10 @@
-
 # Kerbernetes (k10s)
 
 ![Kerbernetes Logo](assets/kerbernetes_tiny.png)
 
 ## Description
 
-Kerbernetes is a Kubernetes-based project that integrates LDAP and Kerberos authentication for managing access control. It provides seamless authentication and role-based access management for Kubernetes clusters.
+Kerbernetes is a Kubernetes authentication service that integrates with Kerberos and LDAP for secure access control.
 
 ## Features
 
