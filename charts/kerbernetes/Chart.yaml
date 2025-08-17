@@ -2,7 +2,7 @@ apiVersion: v2
 name: kerbernetes
 description: Kerbernetes is a Kubernetes authentication service integrating Kerberos and LDAP.
 type: application
-version: "1.0.3"
+version: "1.0.4"
 appVersion: "v1.0.0"
 icon: https://raw.githubusercontent.com/froz42/kerbernetes/refs/heads/main/assets/kerbernetes_tiny.png
 keywords:
@@ -15,3 +15,6 @@ sources:
 maintainers:
   - name: Froz
     email: froz@42paris.fr
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/category: security

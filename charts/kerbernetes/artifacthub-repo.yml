@@ -1,0 +1,16 @@
+repositoryID: c7b036b0-46dd-4df4-8262-2cd6d93786ea
+owners:
+  - name: Froz
+    email: froz@42paris.fr
+displayName: Kerbernetes Charts
+description: Helm charts for deploying Kerbernetes, a Kubernetes authentication service integrating Kerberos and LDAP.
+keywords:
+  - kubernetes
+  - kerberos
+  - ldap
+license: MIT
+links:
+  - name: Source
+    url: https://github.com/froz42/kerbernetes
+  - name: Documentation
+    url: https://github.com/froz42/kerbernetes
