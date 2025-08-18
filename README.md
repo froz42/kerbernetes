@@ -18,12 +18,7 @@ Kerbernetes is a Kubernetes authentication service that integrates with Kerberos
 
 ## Setup
 
-### Prerequisites
-
-- **k8s** cluster
-- **KDC** server
-- **LDAP** server (optional, for LDAP group bindings)
-- **Helm** for deploying the Kerbernetes chart
+You can find the setup instructions [here](https://github.com/froz42/kerbernetes/wiki/Setup.md)
 
 ### Deployment
 
