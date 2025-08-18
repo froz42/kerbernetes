@@ -135,7 +135,7 @@ func (svc *serviceAccountsService) IssueToken(
 	token, err := svc.clientset.CoreV1().ServiceAccounts(svc.namespace).
 		CreateToken(ctx, username, &authv1.TokenRequest{
 			Spec: authv1.TokenRequestSpec{
-				Audiences:         []string{"https://kubernetes.default.svc.cluster.local"},
+				Audiences:         []string{svc.env.TokenAudience},
 				ExpirationSeconds: int64Ptr(int64(svc.env.TokenDuration)),
 			},
 		}, metav1.CreateOptions{})

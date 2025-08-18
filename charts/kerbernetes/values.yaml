@@ -9,6 +9,9 @@ image:
 
 httpPort: 3000
 
+token:
+  audience: "https://kubernetes.default.svc.cluster.local"
+
 ldap:
   enabled: false
   url: "ldap://ldap.example.com"

@@ -24,6 +24,8 @@ spec:
               value: "{{ .Values.httpPort }}"
             - name: LDAP_ENABLED
               value: "{{ .Values.ldap.enabled }}"
+            - name: TOKEN_AUDIENCE
+              value: "{{ .Values.token.audience }}"
             {{- if and .Values.ldap.enabled .Values.secrets.ldapSecret }}
             - name: LDAP_BASE_DN
               value: "{{ .Values.ldap.baseDN }}"

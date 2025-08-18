@@ -16,7 +16,8 @@ type Env struct {
 	KeytabPath string `mapstructure:"KEYTAB_PATH" default:"/etc/krb5.keytab" validate:"required"`
 	Namespace  string `mapstructure:"NAMESPACE" default:"default" validate:"required"`
 
-	TokenDuration int `mapstructure:"TOKEN_DURATION" default:"600" validate:"required"`
+	TokenDuration int    `mapstructure:"TOKEN_DURATION" default:"600" validate:"required"`
+	TokenAudience string `mapstructure:"TOKEN_AUDIENCE" default:"https://kubernetes.default.svc.cluster.local"`
 
 	LDAPEnabled bool   `mapstructure:"LDAP_ENABLED" default:"false"`
 	LDAPURL     string `mapstructure:"LDAP_URL"`

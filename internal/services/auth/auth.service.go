@@ -92,7 +92,11 @@ func (s *authService) AuthAccount(
 	}, nil
 }
 
-func (s *authService) ldapReconcilate(ctx context.Context, username string, sa *corev1.ServiceAccount) error {
+func (s *authService) ldapReconcilate(
+	ctx context.Context,
+	username string,
+	sa *corev1.ServiceAccount,
+) error {
 	user, err := s.ldapSvc.GetUser(username)
 	if err != nil {
 		s.logger.Error("Failed to get user from LDAP", "username", username, "error", err)
