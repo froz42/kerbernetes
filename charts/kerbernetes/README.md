@@ -16,6 +16,8 @@ helm repo add froz42 oci://ghcr.io/froz42/kerbernetes
 helm install kerbernetes froz42/kerbernetes
 ```
 
+You can find the setup instructions [here](https://github.com/froz42/kerbernetes/wiki/Setup.md)
+
 ## Values
 
 The following table lists the configurable parameters of the Kerbernetes chart and their default values.
