@@ -27,7 +27,7 @@ The following table lists the configurable parameters of the Kerbernetes chart a
 | `replicaCount`           | Number of replicas for the deployment | `1`                           |
 | `serviceAccountName`     | Name of the service account           | `kerbernetes-api-sa`          |
 | `image.repository`       | Image repository                      | `ghcr.io/froz42/kerbernetes`  |
-| `image.tag`              | Image tag                             | `v1.0.0`                      |
+| `image.tag`              | Image tag                             | `v1.1.0`                      |
 | `image.pullPolicy`       | Image pull policy                     | `IfNotPresent`                |
 | `httpPort`               | HTTP port for the service             | `3000`                        |
 | `ldap.enabled`           | Enable LDAP integration               | `false`                       |
