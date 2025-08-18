@@ -27,8 +27,6 @@ spec:
             - name: TOKEN_AUDIENCE
               value: "{{ .Values.token.audience }}"
             {{- if and .Values.ldap.enabled .Values.secrets.ldapSecret }}
-            - name: LDAP_BASE_DN
-              value: "{{ .Values.ldap.baseDN }}"
             - name: LDAP_USER_BASE_DN
               value: "{{ .Values.ldap.userBaseDN }}"
             - name: LDAP_USER_FILTER

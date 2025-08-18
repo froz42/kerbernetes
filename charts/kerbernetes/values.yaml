@@ -15,7 +15,6 @@ token:
 ldap:
   enabled: false
   url: "ldap://ldap.example.com"
-  baseDN: "dc=example,dc=com"
   userBaseDN: "ou=users,dc=example,dc=com"
   userFilter: "(uid=%s)"
   groupBaseDN: "ou=groups,dc=example,dc=com"

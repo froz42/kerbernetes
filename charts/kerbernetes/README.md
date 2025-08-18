@@ -32,7 +32,6 @@ The following table lists the configurable parameters of the Kerbernetes chart a
 | `httpPort`               | HTTP port for the service             | `3000`                        |
 | `ldap.enabled`           | Enable LDAP integration               | `false`                       |
 | `ldap.url`               | LDAP server URL                       | `ldap://ldap.example.com`     |
-| `ldap.baseDN`            | Base DN for LDAP queries              | `dc=example,dc=com`           |
 | `ldap.userBaseDN`        | User base DN for LDAP                 | `ou=users,dc=example,dc=com`  |
 | `ldap.userFilter`        | User filter for LDAP                  | `(uid=%s)`                    |
 | `ldap.groupBaseDN`       | Group base DN for LDAP                | `ou=groups,dc=example,dc=com` |
