@@ -10,6 +10,38 @@
 
 Kerbernetes is a Kubernetes authentication service that integrates with Kerberos and LDAP for secure access control.
 
+## Auth Mecanism Overview
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant KDC as Kerberos KDC
+    participant Kerbernetes as Kerbernetes API
+    participant LDAP as LDAP Server
+    participant Kubernetes as Kubernetes API Server
+
+    Client->>KDC: kinit user@EXAMPLE.COM (request TGT)
+    KDC-->>Client: TGT (Ticket Granting Ticket)
+
+    Client->>KDC: Request Service Ticket for HTTP/kerbernetes.example.com
+    KDC-->>Client: Service Ticket (TGS)
+
+    Client->>Kerbernetes: HTTPS request with SPNEGO token
+    Kerbernetes->>KDC: Validate SPNEGO ticket
+    KDC-->>Kerbernetes: Ticket valid
+
+    alt LDAP integration enabled
+        Kerbernetes->>LDAP: Lookup user & groups
+        LDAP-->>Kerbernetes: User info & groups
+    end
+
+    Kerbernetes->>Kubernetes: Map user/groups to RBAC roles
+    Kubernetes-->>Kerbernetes: Authorization result
+
+    Kerbernetes-->>Client: Response with auth token / access granted
+
+```
+
 ## Features
 
 - Kerberos-based authentication endpoint.
