@@ -10,24 +10,24 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-type RbacKerbenetesV1Interface interface {
+type RbacKerbernetesV1Interface interface {
 	RESTClient() rest.Interface
 	LdapGroupBindingsGetter
 }
 
-// RbacKerbenetesV1Client is used to interact with features provided by the rbac.kerbernetes.io group.
-type RbacKerbenetesV1Client struct {
+// RbacKerbernetesV1Client is used to interact with features provided by the rbac.kerbernetes.io group.
+type RbacKerbernetesV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *RbacKerbenetesV1Client) LdapGroupBindings() LdapGroupBindingInterface {
+func (c *RbacKerbernetesV1Client) LdapGroupBindings() LdapGroupBindingInterface {
 	return newLdapGroupBindings(c)
 }
 
-// NewForConfig creates a new RbacKerbenetesV1Client for the given config.
+// NewForConfig creates a new RbacKerbernetesV1Client for the given config.
 // NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
 // where httpClient was generated with rest.HTTPClientFor(c).
-func NewForConfig(c *rest.Config) (*RbacKerbenetesV1Client, error) {
+func NewForConfig(c *rest.Config) (*RbacKerbernetesV1Client, error) {
 	config := *c
 	setConfigDefaults(&config)
 	httpClient, err := rest.HTTPClientFor(&config)
@@ -37,21 +37,21 @@ func NewForConfig(c *rest.Config) (*RbacKerbenetesV1Client, error) {
 	return NewForConfigAndClient(&config, httpClient)
 }
 
-// NewForConfigAndClient creates a new RbacKerbenetesV1Client for the given config and http client.
+// NewForConfigAndClient creates a new RbacKerbernetesV1Client for the given config and http client.
 // Note the http client provided takes precedence over the configured transport values.
-func NewForConfigAndClient(c *rest.Config, h *http.Client) (*RbacKerbenetesV1Client, error) {
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*RbacKerbernetesV1Client, error) {
 	config := *c
 	setConfigDefaults(&config)
 	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
 	}
-	return &RbacKerbenetesV1Client{client}, nil
+	return &RbacKerbernetesV1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new RbacKerbenetesV1Client for the given config and
+// NewForConfigOrDie creates a new RbacKerbernetesV1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *RbacKerbenetesV1Client {
+func NewForConfigOrDie(c *rest.Config) *RbacKerbernetesV1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -59,9 +59,9 @@ func NewForConfigOrDie(c *rest.Config) *RbacKerbenetesV1Client {
 	return client
 }
 
-// New creates a new RbacKerbenetesV1Client for the given RESTClient.
-func New(c rest.Interface) *RbacKerbenetesV1Client {
-	return &RbacKerbenetesV1Client{c}
+// New creates a new RbacKerbernetesV1Client for the given RESTClient.
+func New(c rest.Interface) *RbacKerbernetesV1Client {
+	return &RbacKerbernetesV1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) {
@@ -77,7 +77,7 @@ func setConfigDefaults(config *rest.Config) {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *RbacKerbenetesV1Client) RESTClient() rest.Interface {
+func (c *RbacKerbernetesV1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

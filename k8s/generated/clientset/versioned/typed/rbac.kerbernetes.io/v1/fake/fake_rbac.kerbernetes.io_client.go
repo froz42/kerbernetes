@@ -8,17 +8,17 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeRbacKerbenetesV1 struct {
+type FakeRbacKerbernetesV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeRbacKerbenetesV1) LdapGroupBindings() v1.LdapGroupBindingInterface {
+func (c *FakeRbacKerbernetesV1) LdapGroupBindings() v1.LdapGroupBindingInterface {
 	return newFakeLdapGroupBindings(c)
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeRbacKerbenetesV1) RESTClient() rest.Interface {
+func (c *FakeRbacKerbernetesV1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

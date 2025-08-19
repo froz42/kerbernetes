@@ -238,9 +238,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	RbacKerbenetes() rbackerbernetesio.Interface
+	RbacKerbernetes() rbackerbernetesio.Interface
 }
 
-func (f *sharedInformerFactory) RbacKerbenetes() rbackerbernetesio.Interface {
+func (f *sharedInformerFactory) RbacKerbernetes() rbackerbernetesio.Interface {
 	return rbackerbernetesio.New(f, f.namespace, f.tweakListOptions)
 }

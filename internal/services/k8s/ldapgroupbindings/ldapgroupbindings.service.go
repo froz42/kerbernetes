@@ -48,7 +48,7 @@ func New(logger *slog.Logger, k8sSvc k8ssvc.K8sService) (LdapGroupBindingService
 	}
 
 	informerFactory := informers.NewSharedInformerFactory(cs, 0)
-	informer := informerFactory.RbacKerbenetes().V1()
+	informer := informerFactory.RbacKerbernetes().V1()
 
 	svc := &ldapGroupBindingService{
 		logger:          logger.With("service", "ldapclusterrolebindings"),

@@ -12,10 +12,10 @@ import (
 // fakeLdapGroupBindings implements LdapGroupBindingInterface
 type fakeLdapGroupBindings struct {
 	*gentype.FakeClientWithListAndApply[*v1.LdapGroupBinding, *v1.LdapGroupBindingList, *rbackerbernetesiov1.LdapGroupBindingApplyConfiguration]
-	Fake *FakeRbacKerbenetesV1
+	Fake *FakeRbacKerbernetesV1
 }
 
-func newFakeLdapGroupBindings(fake *FakeRbacKerbenetesV1) typedrbackerbernetesiov1.LdapGroupBindingInterface {
+func newFakeLdapGroupBindings(fake *FakeRbacKerbernetesV1) typedrbackerbernetesiov1.LdapGroupBindingInterface {
 	return &fakeLdapGroupBindings{
 		gentype.NewFakeClientWithListAndApply[*v1.LdapGroupBinding, *v1.LdapGroupBindingList, *rbackerbernetesiov1.LdapGroupBindingApplyConfiguration](
 			fake.Fake,

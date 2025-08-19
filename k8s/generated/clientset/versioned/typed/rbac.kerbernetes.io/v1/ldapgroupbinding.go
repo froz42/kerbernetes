@@ -40,7 +40,7 @@ type ldapGroupBindings struct {
 }
 
 // newLdapGroupBindings returns a LdapGroupBindings
-func newLdapGroupBindings(c *RbacKerbenetesV1Client) *ldapGroupBindings {
+func newLdapGroupBindings(c *RbacKerbernetesV1Client) *ldapGroupBindings {
 	return &ldapGroupBindings{
 		gentype.NewClientWithListAndApply[*rbackerbernetesiov1.LdapGroupBinding, *rbackerbernetesiov1.LdapGroupBindingList, *applyconfigurationrbackerbernetesiov1.LdapGroupBindingApplyConfiguration](
 			"ldapgroupbindings",

@@ -5,8 +5,8 @@ package fake
 import (
 	applyconfiguration "github.com/froz42/kerbernetes/k8s/generated/applyconfiguration"
 	clientset "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned"
-	rbackerbenetesv1 "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned/typed/rbac.kerbernetes.io/v1"
-	fakerbackerbenetesv1 "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned/typed/rbac.kerbernetes.io/v1/fake"
+	rbackerbernetesv1 "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned/typed/rbac.kerbernetes.io/v1"
+	fakerbackerbernetesv1 "github.com/froz42/kerbernetes/k8s/generated/clientset/versioned/typed/rbac.kerbernetes.io/v1/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -109,7 +109,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// RbacKerbenetesV1 retrieves the RbacKerbenetesV1Client
-func (c *Clientset) RbacKerbenetesV1() rbackerbenetesv1.RbacKerbenetesV1Interface {
-	return &fakerbackerbenetesv1.FakeRbacKerbenetesV1{Fake: &c.Fake}
+// RbacKerbernetesV1 retrieves the RbacKerbernetesV1Client
+func (c *Clientset) RbacKerbernetesV1() rbackerbernetesv1.RbacKerbernetesV1Interface {
+	return &fakerbackerbernetesv1.FakeRbacKerbernetesV1{Fake: &c.Fake}
 }

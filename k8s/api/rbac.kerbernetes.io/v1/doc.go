@@ -2,5 +2,5 @@
 
 // Package v1 is the v1 version of the API.
 // +groupName=rbac.kerbernetes.io
-// +groupGoName=RbacKerbenetes
+// +groupGoName=RbacKerbernetes
 package v1
