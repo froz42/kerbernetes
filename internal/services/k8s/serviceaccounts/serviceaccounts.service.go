@@ -420,7 +420,7 @@ func (svc *serviceAccountsService) createServiceAccount(
 }
 
 func GenBindingName(username string, roleName string, ldapGroundBindingName string) string {
-	return fmt.Sprintf("kerbenetes::%s::%s::%s", username, ldapGroundBindingName, roleName)
+	return fmt.Sprintf("kerbernetes:%s:%s:%s", username, ldapGroundBindingName, roleName)
 }
 
 // int64Ptr is a helper function to create a pointer to an int64 value.
