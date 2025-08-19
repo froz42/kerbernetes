@@ -16,7 +16,7 @@ helm repo add froz42 oci://ghcr.io/froz42/kerbernetes
 helm install kerbernetes froz42/kerbernetes
 ```
 
-You can find the setup instructions [here](https://github.com/froz42/kerbernetes/wiki/Setup.md)
+See the [Setup Guide](https://github.com/froz42/kerbernetes/wiki/Setup) for detailed instructions on how to set up Kerbernetes in your environment.
 
 ## Values
 
