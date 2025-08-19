@@ -18,7 +18,7 @@ Kerbernetes is a Kubernetes authentication service that integrates with Kerberos
 
 ## Setup
 
-See the [Setup Guide](Setup) for detailed instructions on how to set up Kerbernetes in your environment.
+See the [Setup Guide](https://github.com/froz42/kerbernetes/wiki/Setup) for detailed instructions on how to set up Kerbernetes in your environment.
 
 ### Deployment
 
