@@ -186,9 +186,9 @@ func (svc *serviceAccountsService) GetClusterRoleBindings(
 		"username",
 		username,
 		"count",
-		len(bindings.Items),
+		len(filteredBindings),
 	)
-	return bindings.Items, nil
+	return filteredBindings, nil
 }
 
 // CreateClusterRoleBinding creates a cluster role binding for the service account.
