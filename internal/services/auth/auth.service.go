@@ -34,6 +34,7 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 	return func(i *do.Injector) (AuthService, error) {
 		return New(
 			do.MustInvoke[envsvc.EnvSvc](i),
+			do.MustInvoke[k8ssvc.K8sService](i),
 			do.MustInvoke[serviceaccountssvc.ServiceAccountsService](i),
 			do.MustInvoke[ldapgroupbindingssvc.LdapGroupBindingService](i),
 			do.MustInvoke[ldapsvc.LDAPSvc](i),
@@ -44,6 +45,7 @@ func NewProvider() func(i *do.Injector) (AuthService, error) {
 
 func New(
 	configService envsvc.EnvSvc,
+	k8sSvc k8ssvc.K8sService,
 	serviceAccountsSvc serviceaccountssvc.ServiceAccountsService,
 	ldapGroupBindingsSvc ldapgroupbindingssvc.LdapGroupBindingService,
 	ldapSvc ldapsvc.LDAPSvc,
@@ -51,6 +53,7 @@ func New(
 ) (AuthService, error) {
 	return &authService{
 		env:                  configService.GetEnv(),
+		k8sSvc:               k8sSvc,
 		serviceAccountsSvc:   serviceAccountsSvc,
 		ldapGroupBindingsSvc: ldapGroupBindingsSvc,
 		ldapSvc:              ldapSvc,
