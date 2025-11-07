@@ -6,6 +6,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	envsvc "github.com/froz42/kerbernetes/internal/services/env"
+	k8ssvc "github.com/froz42/kerbernetes/internal/services/k8s"
 	ldapgroupbindingssvc "github.com/froz42/kerbernetes/internal/services/k8s/ldapgroupbindings"
 	k8smodels "github.com/froz42/kerbernetes/internal/services/k8s/models"
 	serviceaccountssvc "github.com/froz42/kerbernetes/internal/services/k8s/serviceaccounts"
@@ -22,6 +23,7 @@ type AuthService interface {
 
 type authService struct {
 	env                  envsvc.Env
+	k8sSvc               k8ssvc.K8sService
 	serviceAccountsSvc   serviceaccountssvc.ServiceAccountsService
 	ldapGroupBindingsSvc ldapgroupbindingssvc.LdapGroupBindingService
 	ldapSvc              ldapsvc.LDAPSvc
@@ -378,6 +380,8 @@ func (s *authService) ensureRoleBinding(
 		Name:     binding.Name,
 	}
 
+	saNamespace := s.k8sSvc.GetNamespace()
+
 	if !exists {
 		newBinding, err := s.serviceAccountsSvc.CreateRoleBinding(
 			ctx,
@@ -402,7 +406,19 @@ func (s *authService) ensureRoleBinding(
 			"bindingName", newBinding.Name,
 		)
 	} else {
-		if existing.RoleRef.Name != binding.Name ||
+		subjectDiffer := false
+		if len(existing.Subjects) != 1 {
+			subjectDiffer = true
+		} else {
+			subject := existing.Subjects[0]
+			if subject.Kind != "ServiceAccount" ||
+				subject.Name != saName ||
+				subject.Namespace != saNamespace {
+				subjectDiffer = true
+			}
+		}
+		if subjectDiffer ||
+			existing.RoleRef.Name != binding.Name ||
 			existing.RoleRef.Kind != binding.Kind ||
 			existing.RoleRef.APIGroup != binding.ApiGroup {
 			_, err := s.serviceAccountsSvc.UpdateRoleBinding(

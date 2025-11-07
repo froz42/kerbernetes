@@ -317,11 +317,12 @@ func (svc *serviceAccountsService) GetRoleBindings(
 func (svc *serviceAccountsService) CreateRoleBinding(
 	ctx context.Context,
 	username string,
-	namespace string,
+	roleBindingNamespace string,
 	ldapGroundBindingName string,
 	roleRef rbacv1.RoleRef,
 ) (*rbacv1.RoleBinding, error) {
 	name := GenBindingName(username, roleRef.Name, ldapGroundBindingName)
+	saNamespace := svc.namespace
 	binding := &rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -333,21 +334,29 @@ func (svc *serviceAccountsService) CreateRoleBinding(
 			{
 				Kind:      "ServiceAccount",
 				Name:      username,
-				Namespace: namespace,
+				Namespace: saNamespace,
 			},
 		},
 		RoleRef: roleRef,
 	}
 
 	binding, err := svc.clientset.RbacV1().
-		RoleBindings(namespace).
+		RoleBindings(roleBindingNamespace).
 		Create(ctx, binding, metav1.CreateOptions{})
 	if err != nil {
 		svc.logger.Error("Failed to create role binding", "error", err)
 		return nil, err
 	}
 
-	svc.logger.Info("Created role binding", "name", binding.Name, "namespace", namespace)
+	svc.logger.Info(
+		"Created role binding",
+		"name",
+		binding.Name,
+		"roleBindingNamespace",
+		roleBindingNamespace,
+		"saNamespace",
+		saNamespace,
+	)
 	return binding, nil
 }
 
@@ -355,13 +364,13 @@ func (svc *serviceAccountsService) CreateRoleBinding(
 func (svc *serviceAccountsService) UpdateRoleBinding(
 	ctx context.Context,
 	username string,
-	namespace string,
+	roleBindingNamespace string,
 	roleRef rbacv1.RoleRef,
 	ldapGroundBindingName string,
 ) (*rbacv1.RoleBinding, error) {
 	name := GenBindingName(username, roleRef.Name, ldapGroundBindingName)
 	binding, err := svc.clientset.RbacV1().
-		RoleBindings(namespace).
+		RoleBindings(roleBindingNamespace).
 		Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		svc.logger.Error("Failed to get role binding", "error", err)
@@ -369,15 +378,30 @@ func (svc *serviceAccountsService) UpdateRoleBinding(
 	}
 
 	binding.RoleRef = roleRef
+	binding.Subjects = []rbacv1.Subject{
+		{
+			Kind:      "ServiceAccount",
+			Name:      username,
+			Namespace: svc.namespace,
+		},
+	}
 	binding, err = svc.clientset.RbacV1().
-		RoleBindings(namespace).
+		RoleBindings(roleBindingNamespace).
 		Update(ctx, binding, metav1.UpdateOptions{})
 	if err != nil {
 		svc.logger.Error("Failed to update role binding", "error", err)
 		return nil, err
 	}
 
-	svc.logger.Info("Updated role binding", "name", binding.Name, "namespace", namespace)
+	svc.logger.Info(
+		"Updated role binding",
+		"name",
+		binding.Name,
+		"roleBindingNamespace",
+		roleBindingNamespace,
+		"saNamespace",
+		svc.namespace,
+	)
 	return binding, nil
 }
 
