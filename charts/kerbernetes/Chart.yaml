@@ -3,7 +3,7 @@ name: kerbernetes
 description: Kerbernetes is a Kubernetes authentication service integrating Kerberos and LDAP.
 type: application
 version: "1.1.9"
-appVersion: "v1.1.4"
+appVersion: "v1.1.5"
 icon: https://raw.githubusercontent.com/froz42/kerbernetes/refs/heads/main/assets/kerbernetes_tiny.png
 keywords:
   - kubernetes

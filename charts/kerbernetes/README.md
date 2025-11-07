@@ -28,7 +28,7 @@ The following table lists the configurable parameters of the Kerbernetes chart a
 | `serviceAccountName`     | Name of the service account            | `kerbernetes-api-sa`                           |
 | `token.audience`         | Audience for the service account token | `https://kubernetes.default.svc.cluster.local` |
 | `image.repository`       | Image repository                       | `ghcr.io/froz42/kerbernetes`                   |
-| `image.tag`              | Image tag                              | `v1.1.4`                                       |
+| `image.tag`              | Image tag                              | `v1.1.5`                                       |
 | `image.pullPolicy`       | Image pull policy                      | `IfNotPresent`                                 |
 | `httpPort`               | HTTP port for the service              | `3000`                                         |
 | `ldap.enabled`           | Enable LDAP integration                | `false`                                        |
