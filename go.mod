@@ -1,6 +1,6 @@
 module github.com/froz42/kerbernetes
 
-go 1.25.3
+go 1.27.1
 
 tool (
 	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
