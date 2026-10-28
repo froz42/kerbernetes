@@ -17,7 +17,7 @@ spec:
       serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         - name: {{ include "kerbernetes-api.containerName" . }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: HTTP_PORT
