@@ -1,4 +1,4 @@
-FROM golang:1.27.1-alpine3.24 AS builder
+FROM golang:1.27.3-alpine3.24 AS builder
 
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
@@ -14,7 +14,7 @@ COPY . .
 
 RUN go build -o kerbernetes-api -ldflags="-s -w -X main.Version=${VERSION}" ./cmd/api/main.go
 
-FROM alpine:3.22
+FROM alpine:3.24.3
 
 RUN adduser -D -g '' kerbernetes-api
 
